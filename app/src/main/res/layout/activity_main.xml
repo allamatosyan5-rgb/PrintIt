@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    android:background="#F5F7F8">
+    <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="PrintIt"
+    android:textSize="42sp"
+    android:textStyle="bold"
+    android:textColor="#0d5f7d"
+    android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Powered by Caicon"
+        android:textSize="14sp"
+        android:textColor="#546E7A"
+        android:layout_marginBottom="40dp"/>
+
+    <EditText
+        android:id="@+id/emailInput"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:hint="Email Address"
+        android:inputType="textEmailAddress"
+        android:paddingLeft="15dp"
+        android:background="@android:drawable/edit_text"
+        android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/passwordInput"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:paddingLeft="15dp"
+        android:background="@android:drawable/edit_text"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/loginBtn"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:text="Login"
+        android:backgroundTint="#0d5f7d"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="16sp"/>
+
+    <Button
+        android:id="@+id/guestBtn"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:text="Continue as Guest"
+        android:backgroundTint="#CFD8DC"
+        android:textColor="#263238"
+        android:layout_marginTop="12dp"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:id="@+id/registerTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Don't have an account? Register"
+        android:layout_marginTop="24dp"
+        android:textColor="#0d5f7d"
+        android:textStyle="bold"
+        android:textSize="14sp"/>
+
+</LinearLayout>
