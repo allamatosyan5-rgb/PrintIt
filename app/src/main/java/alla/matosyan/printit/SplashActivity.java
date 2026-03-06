@@ -3,53 +3,60 @@ package alla.matosyan.printit;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.animation.AlphaAnimation;
+import android.os.Looper;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+// Import Firebase Authentication classes
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 public class SplashActivity extends AppCompatActivity {
 
-    private ImageView introImage;
-    private TextView introText;
-    private int step = 0;
+    private static final int SPLASH_DISPLAY_LENGTH = 5000;
+
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        introImage = findViewById(R.id.introImage);
-        introText = findViewById(R.id.introText);
+        mAuth = FirebaseAuth.getInstance();
 
-        runAnimationSequence();
-    }
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
-    private void runAnimationSequence() {
-        updateContent(R.drawable.photo1, "Premium Custom Apparel");
+        ImageView logo = findViewById(R.id.splash_logo);
+        TextView title = findViewById(R.id.splash_title);
+        TextView tagline = findViewById(R.id.splash_tagline);
 
-        new Handler().postDelayed(() -> {
-            updateContent(R.drawable.photo2, "Branded Merchandise");
-        }, 2000);
+        Animation fadeInSlideUp = AnimationUtils.loadAnimation(this, R.anim.fade_in_slide_up);
+        logo.startAnimation(fadeInSlideUp);
+        title.startAnimation(fadeInSlideUp);
+        tagline.startAnimation(fadeInSlideUp);
 
-        new Handler().postDelayed(() -> {
-            updateContent(R.drawable.photo3, "Industrial Precision");
-        }, 4000);
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                FirebaseUser currentUser = mAuth.getCurrentUser();
 
-        new Handler().postDelayed(() -> {
-            startActivity(new Intent(SplashActivity.this, MainActivity.class));
-            finish();
-        }, 6500);
-    }
+                Intent nextIntent;
 
-    private void updateContent(int imageRes, String description) {
-        AlphaAnimation fadeIn = new AlphaAnimation(0.2f, 1.0f);
-        fadeIn.setDuration(800);
+                if (currentUser != null) {
+                    nextIntent = new Intent(SplashActivity.this, MainActivity.class);
+                } else {
+                    nextIntent = new Intent(SplashActivity.this, LoginActivity.class);
+                }
 
-        introImage.setImageResource(imageRes);
-        introText.setText(description);
+                startActivity(nextIntent);
 
-        introImage.startAnimation(fadeIn);
-        introText.startAnimation(fadeIn);
+                finish();
+            }
+        }, SPLASH_DISPLAY_LENGTH);
     }
 }

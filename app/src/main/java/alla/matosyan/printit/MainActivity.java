@@ -1,75 +1,51 @@
-
 package alla.matosyan.printit;
 
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.MenuItem;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText emailField, passwordField;
-    private Button loginButton, guestButton;
-    private TextView registerText;
-    private FirebaseAuth mAuth;
+    BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mAuth = FirebaseAuth.getInstance();
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        emailField = findViewById(R.id.emailInput);
-        passwordField = findViewById(R.id.passwordInput);
-        loginButton = findViewById(R.id.loginBtn);
-        guestButton = findViewById(R.id.guestBtn);
-        registerText = findViewById(R.id.registerTv);
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFragment()).commit();
 
-        loginButton.setOnClickListener(v -> {
-            String email = emailField.getText().toString().trim();
-            String password = passwordField.getText().toString().trim();
+        bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Fragment selectedFragment = null;
+                int itemId = item.getItemId();
 
-            if (!email.isEmpty() && !password.isEmpty()) {
-                loginUser(email, password);
-            } else {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                if (itemId == R.id.nav_home) {
+                    selectedFragment = new HomeFragment();
+                } else if (itemId == R.id.nav_search) {
+                    selectedFragment = new SearchFragment();
+                } else if (itemId == R.id.nav_favorites) {
+                    selectedFragment = new FavoritesFragment();
+                } else if (itemId == R.id.nav_cart) {
+                    selectedFragment = new CartFragment();
+                } else if (itemId == R.id.nav_profile) {
+                    selectedFragment = new ProfileFragment();
+                }
+
+                if (selectedFragment != null) {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
+                    return true;
+                }
+                return false;
             }
         });
-
-        guestButton.setOnClickListener(v -> {
-            signInAnonymously();
-        });
-
-        registerText.setOnClickListener(v -> {
-            Toast.makeText(this, "Registration screen coming soon!", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    private void loginUser(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(this, "Welcome back!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, "Error: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void signInAnonymously() {
-        mAuth.signInAnonymously()
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(this, "Signed in as Guest", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, "Guest login failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 }
