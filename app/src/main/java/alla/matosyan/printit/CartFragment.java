@@ -1,64 +1,104 @@
 package alla.matosyan.printit;
 
+import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link CartFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class CartFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private RecyclerView recyclerView;
+    private CartAdapter adapter;
+    private List<CartItem> cartItemList;
+    private FirebaseFirestore db;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public CartFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment CartFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static CartFragment newInstance(String param1, String param2) {
-        CartFragment fragment = new CartFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        View view = inflater.inflate(R.layout.fragment_cart, container, false);
+
+        db = FirebaseFirestore.getInstance();
+        recyclerView = view.findViewById(R.id.recycler_cart);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        cartItemList = new ArrayList<>();
+
+        adapter = new CartAdapter(cartItemList,
+
+
+                new CartAdapter.OnItemDeleteListener() {
+                    @Override
+                    public void onDeleteClick(int position, CartItem item) {
+                        deleteItemFromCart(position, item);
+                    }
+                },
+
+                new CartAdapter.OnItemCheckoutListener() {
+                    @Override
+                    public void onCheckoutClick(CartItem item) {
+
+                        Intent intent = new Intent(requireContext(), CheckoutActivity.class);
+                        intent.putExtra("CART_ITEM_ID", item.getDocumentId());
+                        startActivity(intent);
+                    }
+                }
+        );
+
+        recyclerView.setAdapter(adapter);
+
+        loadCartItems();
+
+        return view;
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_cart, container, false);
+    private void loadCartItems() {
+        db.collection("cart_items").get().addOnSuccessListener(queryDocumentSnapshots -> {
+            cartItemList.clear();
+            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+
+                CartItem item = document.toObject(CartItem.class);
+
+                item.setDocumentId(document.getId());
+
+                cartItemList.add(item);
+            }
+            adapter.notifyDataSetChanged();
+        }).addOnFailureListener(e -> {
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Failed to load cart", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void deleteItemFromCart(int position, CartItem item) {
+
+        db.collection("cart_items").document(item.getDocumentId()).delete()
+                .addOnSuccessListener(aVoid -> {
+                    cartItemList.remove(position);
+                    adapter.notifyItemRemoved(position);
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Item removed", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Failed to delete item", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

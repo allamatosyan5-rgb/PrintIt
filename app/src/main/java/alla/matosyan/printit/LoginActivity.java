@@ -3,28 +3,19 @@ package alla.matosyan.printit;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
-    private RadioGroup rgRole;
-    private RadioButton rbCustomer;
     private Button btnLogin, btnRegister;
 
     private FirebaseAuth mAuth;
@@ -40,13 +31,14 @@ public class LoginActivity extends AppCompatActivity {
 
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
-        rgRole = findViewById(R.id.rg_role);
-        rbCustomer = findViewById(R.id.rb_customer);
         btnLogin = findViewById(R.id.btn_login);
         btnRegister = findViewById(R.id.btn_register);
 
         btnLogin.setOnClickListener(v -> loginUser());
-        btnRegister.setOnClickListener(v -> registerUser());
+
+        btnRegister.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+        });
     }
 
     private void loginUser() {
@@ -60,47 +52,17 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
-                    checkUserRole(authResult.getUser().getUid());
+                    FirebaseUser user = authResult.getUser();
+
+                    if (user != null && user.isEmailVerified()) {
+                        checkUserRole(user.getUid());
+                    } else {
+                        mAuth.signOut();
+                        Toast.makeText(this, "Please verify your email address. Check your inbox!", Toast.LENGTH_LONG).show();
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Login Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void registerUser() {
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-
-        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String selectedRole = rbCustomer.isChecked() ? "customer" : "employee";
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener(authResult -> {
-                    String userId = authResult.getUser().getUid();
-                    saveRoleToDatabase(userId, email, selectedRole);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Registration Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void saveRoleToDatabase(String userId, String email, String role) {
-        Map<String, Object> userMap = new HashMap<>();
-        userMap.put("email", email);
-        userMap.put("role", role);
-
-        db.collection("Users").document(userId)
-                .set(userMap)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Account Created!", Toast.LENGTH_SHORT).show();
-                    routeUser(role);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to save role.", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -120,12 +82,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void routeUser(String role) {
-        Intent intent;
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         if ("employee".equals(role)) {
-            intent = new Intent(LoginActivity.this, MainActivity.class);
             Toast.makeText(this, "Welcome Employee!", Toast.LENGTH_SHORT).show();
         } else {
-            intent = new Intent(LoginActivity.this, MainActivity.class);
             Toast.makeText(this, "Welcome Customer!", Toast.LENGTH_SHORT).show();
         }
         startActivity(intent);

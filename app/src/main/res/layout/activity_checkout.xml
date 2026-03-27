@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/caicon_grey_background">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Checkout"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"
+        android:textColor="@color/black" />
+
+    <EditText
+        android:id="@+id/et_checkout_name"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Full Name"
+        android:textColorHint="#000000"
+        android:textColor="#000000"
+        android:background="#FFFFFF"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/et_checkout_phone"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Phone Number"
+        android:inputType="phone"
+        android:textColorHint="#000000"
+        android:textColor="#000000"
+        android:background="#FFFFFF"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/et_checkout_address"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:hint="Shipping Address"
+        android:gravity="top"
+        android:textColorHint="#000000"
+        android:textColor="#000000"
+        android:background="#FFFFFF"
+        android:padding="12dp"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:id="@+id/btn_place_order"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Place Order"
+        android:backgroundTint="@color/caicon_blue_primary"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="18sp" />
+
+</LinearLayout>

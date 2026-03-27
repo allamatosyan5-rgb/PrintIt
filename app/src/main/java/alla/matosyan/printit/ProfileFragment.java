@@ -1,64 +1,128 @@
 package alla.matosyan.printit;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ProfileFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.signature.ObjectKey;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
 public class ProfileFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private TextView tvName, tvEmail;
+    private ImageView profileImage;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+    private FirebaseStorage storage;
+    private Uri imageUri;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private final ActivityResultLauncher<String> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if (uri != null) {
+                    imageUri = uri;
+                    profileImage.setImageURI(uri);
+                    uploadProfileImage();
+                }
+            }
+    );
 
-    public ProfileFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ProfileFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ProfileFragment newInstance(String param1, String param2) {
-        ProfileFragment fragment = new ProfileFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
+
+        tvName = view.findViewById(R.id.profile_name);
+        tvEmail = view.findViewById(R.id.profile_email);
+        profileImage = view.findViewById(R.id.profile_image);
+        Button btnOrders = view.findViewById(R.id.btn_my_orders);
+        Button btnLogout = view.findViewById(R.id.btn_logout);
+
+        loadUserData();
+
+        profileImage.setOnClickListener(v -> galleryLauncher.launch("image/*"));
+
+        btnOrders.setOnClickListener(v -> {
+            Toast.makeText(getActivity(), "Opening Orders...", Toast.LENGTH_SHORT).show();
+        });
+
+        btnLogout.setOnClickListener(v -> {
+            mAuth.signOut();
+            startActivity(new Intent(getActivity(), LoginActivity.class));
+            getActivity().finish();
+        });
+
+        return view;
+    }
+
+    private void loadUserData() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            tvEmail.setText(user.getEmail());
+
+            db.collection("Users").document(user.getUid()).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists() && isAdded()) {
+                            tvName.setText(documentSnapshot.getString("fullName"));
+                            String photoUrl = documentSnapshot.getString("profileImageUrl");
+
+                            if (photoUrl != null && !photoUrl.isEmpty()) {
+                                Glide.with(this)
+                                        .load(photoUrl)
+                                        .signature(new ObjectKey(System.currentTimeMillis()))
+                                        .placeholder(R.drawable.profile_placeholder)
+                                        .into(profileImage);
+                            }
+                        }
+                    });
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+    private void uploadProfileImage() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null || imageUri == null) return;
+
+        Toast.makeText(getContext(), "Updating Profile...", Toast.LENGTH_SHORT).show();
+        StorageReference fileRef = storage.getReference().child("profile_pics/" + user.getUid() + ".jpg");
+
+        fileRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
+            fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                db.collection("Users").document(user.getUid())
+                        .update("profileImageUrl", uri.toString())
+                        .addOnSuccessListener(aVoid -> {
+                            if (isAdded()) {
+                                Glide.with(this)
+                                        .load(uri)
+                                        .signature(new ObjectKey(System.currentTimeMillis()))
+                                        .circleCrop()
+                                        .into(profileImage);
+                                Toast.makeText(getContext(), "Profile Photo Updated!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            });
+        }).addOnFailureListener(e -> Toast.makeText(getContext(), "Upload Failed", Toast.LENGTH_SHORT).show());
     }
 }

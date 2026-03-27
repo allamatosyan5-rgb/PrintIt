@@ -1,123 +1,233 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".HomeFragment">
+    android:background="@color/caicon_grey_background">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <LinearLayout
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_height="180dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="24dp">
 
-            <androidx.cardview.widget.CardView
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="140dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp">
+                android:layout_height="match_parent"
+                android:background="@color/caicon_blue_primary">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/hero_banner" />
-            </androidx.cardview.widget.CardView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Products you might like"
-                android:textColor="@color/caicon_blue_primary"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:scrollbars="none">
+                    android:src="@drawable/banner_promo"
+                    android:alpha="0.6"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20dp">
 
-                    <LinearLayout
-                        android:layout_width="140dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginEnd="16dp">
+                        android:text="spring sale"
+                        android:textColor="@color/white"
+                        android:textSize="24sp"
+                        android:textStyle="bold"/>
 
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/card_mug"
-                            android:layout_width="140dp"
-                            android:layout_height="140dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="2dp">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:padding="20dp"
-                                android:src="@drawable/ic_launcher_foreground" />
-                        </androidx.cardview.widget.CardView>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Classic Mug"
-                            android:textStyle="bold"
-                            android:textSize="16sp"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="$12.99"
-                            android:textColor="#888888"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="140dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginEnd="16dp">
-
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/card_tshirt"
-                            android:layout_width="140dp"
-                            android:layout_height="140dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="2dp">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:padding="20dp"
-                                android:src="@drawable/ic_launcher_foreground" />
-                        </androidx.cardview.widget.CardView>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="T-Shirt"
-                            android:textStyle="bold"
-                            android:textSize="16sp"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="$24.99"
-                            android:textColor="#888888"/>
-                    </LinearLayout>
-
+                        android:text="20% off all t-shirts"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
                 </LinearLayout>
-            </HorizontalScrollView>
-        </LinearLayout>
-    </ScrollView>
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
 
-</FrameLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Trending Now"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"
+            android:textColor="@color/black"/>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="200dp"
+                    android:layout_height="100dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginVertical="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/caicon_blue_primary">
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:padding="16dp">
+                        <TextView android:id="@+id/news_title_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bestseller" android:textColor="@color/white" android:textStyle="bold" android:textSize="16sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_below="@id/news_title_1" android:layout_marginTop="4dp" android:text="Custom Mugs are selling fast!" android:textColor="#E0E0E0" android:textSize="12sp"/>
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="200dp"
+                    android:layout_height="100dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginVertical="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="#424242">
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:padding="16dp">
+                        <TextView android:id="@+id/news_title_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="New Arrival" android:textColor="@color/white" android:textStyle="bold" android:textSize="16sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_below="@id/news_title_2" android:layout_marginTop="4dp" android:text="Design your own Phone Case" android:textColor="#E0E0E0" android:textSize="12sp"/>
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="200dp"
+                    android:layout_height="100dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginVertical="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/caicon_blue_primary">
+                    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:padding="16dp">
+                        <TextView android:id="@+id/news_title_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Free Shipping" android:textColor="@color/white" android:textStyle="bold" android:textSize="16sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_below="@id/news_title_3" android:layout_marginTop="4dp" android:text="On all orders over $50" android:textColor="#E0E0E0" android:textSize="12sp"/>
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Our Products"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"
+            android:textColor="@color/black"/>
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:rowCount="3"
+            android:alignmentMode="alignMargins"
+            android:columnOrderPreserved="false">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_tshirt"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#424242"
+                app:cardElevation="2dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_tshirt" android:scaleType="fitCenter"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="t-shirt" android:textColor="@color/white" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_mug"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#424242"
+                app:cardElevation="2dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_mug" android:scaleType="fitCenter"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="mug" android:textColor="@color/white" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_bottle"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#424242"
+                app:cardElevation="2dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_bottle" android:scaleType="fitCenter"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="water bottle" android:textColor="@color/white" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_phone"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#424242"
+                app:cardElevation="2dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_phone" android:scaleType="fitCenter"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="phone case" android:textColor="@color/white" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_pillow"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#424242"
+                app:cardElevation="2dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_pillow" android:scaleType="fitCenter"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="pillow" android:textColor="@color/white" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_poster"
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#424242"
+                app:cardElevation="2dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_poster" android:scaleType="fitCenter"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="poster" android:textColor="@color/white" android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </GridLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -19,18 +19,25 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         CardView cardTshirt = view.findViewById(R.id.card_tshirt);
+        CardView cardMug = view.findViewById(R.id.card_mug);
+        CardView cardBottle = view.findViewById(R.id.card_bottle);
+        CardView cardPhone = view.findViewById(R.id.card_phone);
+        CardView cardPillow = view.findViewById(R.id.card_pillow);
+        CardView cardPoster = view.findViewById(R.id.card_poster);
 
-        cardTshirt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), DesignStudioActivity.class);
-
-                intent.putExtra("PRODUCT_TYPE", "T-Shirt");
-
-                startActivity(intent);
-            }
-        });
+        cardTshirt.setOnClickListener(v -> openDesignStudio("T-Shirt"));
+        cardMug.setOnClickListener(v -> openDesignStudio("Mug"));
+        cardBottle.setOnClickListener(v -> openDesignStudio("Water Bottle"));
+        cardPhone.setOnClickListener(v -> openDesignStudio("Phone Case"));
+        cardPillow.setOnClickListener(v -> openDesignStudio("Pillow"));
+        cardPoster.setOnClickListener(v -> openDesignStudio("Poster"));
 
         return view;
+    }
+
+    private void openDesignStudio(String productType) {
+        Intent intent = new Intent(getActivity(), DesignStudioActivity.class);
+        intent.putExtra("PRODUCT_TYPE", productType);
+        startActivity(intent);
     }
 }

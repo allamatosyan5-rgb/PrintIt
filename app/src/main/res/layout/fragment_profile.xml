@@ -1,14 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ProfileFragment">
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/caicon_grey_background">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="32dp">
 
-</FrameLayout>
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profile_image"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:padding="2dp"
+            app:strokeWidth="3dp"
+            app:strokeColor="@color/caicon_blue_primary"
+            app:shapeAppearanceOverlay="@style/CircleImage"
+            android:scaleType="centerCrop"
+            android:src="@drawable/profile_placeholder"
+            android:background="@android:color/transparent"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <TextView
+            android:id="@+id/profile_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading Name..."
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/profile_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="email@example.com"
+            android:textColor="#757575"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_my_orders"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="My Orders"
+                android:gravity="start|center_vertical"
+                android:paddingStart="16dp"
+                android:textColor="@color/black"
+                app:icon="@android:drawable/ic_menu_agenda"
+                app:iconTint="@color/caicon_blue_primary"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#EEEEEE"
+                android:layout_marginHorizontal="16dp"/>
+
+            <Button
+                android:id="@+id/btn_settings"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Settings"
+                android:gravity="start|center_vertical"
+                android:paddingStart="16dp"
+                android:textColor="@color/black"
+                app:icon="@android:drawable/ic_menu_manage"
+                app:iconTint="@color/caicon_blue_primary"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#EEEEEE"
+                android:layout_marginHorizontal="16dp"/>
+
+            <Button
+                android:id="@+id/btn_logout"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Logout"
+                android:gravity="start|center_vertical"
+                android:paddingStart="16dp"
+                android:textColor="#F44336"
+                app:icon="@android:drawable/ic_lock_power_off"
+                app:iconTint="#F44336"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>
