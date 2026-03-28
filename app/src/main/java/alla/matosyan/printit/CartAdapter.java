@@ -17,7 +17,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
     private List<CartItem> cartItems;
     private OnItemDeleteListener deleteListener;
-
     private OnItemCheckoutListener checkoutListener;
 
     public interface OnItemDeleteListener {
@@ -54,8 +53,34 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                     .load(item.getImageUrl())
                     .into(holder.ivItemImage);
         } else {
-            holder.ivItemImage.setImageResource(R.drawable.blank_tshirt);
+            String type = item.getItemType();
+
+            if (type != null) {
+                switch (type) {
+                    case "Mug":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_mug);
+                        break;
+                    case "Water Bottle":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_bottle);
+                        break;
+                    case "Phone Case":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_phone);
+                        break;
+                    case "Pillow":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_pillow);
+                        break;
+                    case "Poster":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_poster);
+                        break;
+                    default:
+                        holder.ivItemImage.setImageResource(R.drawable.blank_tshirt);
+                        break;
+                }
+            } else {
+                holder.ivItemImage.setImageResource(R.drawable.blank_tshirt);
+            }
         }
+        // ---------------------------------------------------------------------
 
         holder.btnDelete.setOnClickListener(v -> {
             if (deleteListener != null) {
@@ -79,7 +104,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         ImageView ivItemImage;
         TextView tvItemType, tvTextPreview, tvItemPrice;
         ImageButton btnDelete;
-
         Button btnCheckout;
 
         public CartViewHolder(@NonNull View itemView) {
@@ -89,8 +113,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             tvTextPreview = itemView.findViewById(R.id.cart_item_text_preview);
             btnDelete = itemView.findViewById(R.id.btn_delete_item);
             tvItemPrice = itemView.findViewById(R.id.cart_item_price);
-
-
             btnCheckout = itemView.findViewById(R.id.btn_checkout_item);
         }
     }
