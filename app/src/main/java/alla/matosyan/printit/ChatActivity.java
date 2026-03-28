@@ -1,7 +1,9 @@
 package alla.matosyan.printit;
 
+import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
+import android.os.Handler;
+import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -29,57 +31,73 @@ public class ChatActivity extends AppCompatActivity {
         btnSendMessage.setOnClickListener(v -> {
             String message = etChatInput.getText().toString().trim();
             if (!message.isEmpty()) {
-
-                addUserMessageToScreen(message);
-
+                addUserMessage(message);
                 etChatInput.setText("");
 
-                simulateAiResponse();
+                new Handler().postDelayed(() -> generateAIResponse(message.toLowerCase()), 1000);
             }
         });
     }
 
-    private void addUserMessageToScreen(String message) {
+    private void addUserMessage(String text) {
         TextView userText = new TextView(this);
-        userText.setText(message);
-        userText.setBackgroundColor(getResources().getColor(R.color.caicon_blue_primary));
-        userText.setTextColor(getResources().getColor(android.R.color.white));
-        userText.setPadding(30, 20, 30, 20);
+        userText.setText(text);
+        userText.setBackgroundColor(Color.parseColor("#003366"));
+        userText.setTextColor(Color.WHITE);
+        userText.setPadding(32, 24, 32, 24);
+        userText.setTextSize(16f);
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.gravity = android.view.Gravity.END;
-        params.setMargins(0, 16, 0, 16);
+        params.gravity = Gravity.END;
+        params.setMargins(100, 16, 0, 16);
         userText.setLayoutParams(params);
 
         chatMessagesContainer.addView(userText);
         scrollToBottom();
     }
 
-    private void simulateAiResponse() {
+    private void addAIMessage(String text) {
         TextView aiText = new TextView(this);
-        aiText.setText("I am an AI placeholder! Soon, I will be connected to a real brain to answer that.");
-        aiText.setBackgroundColor(0xFFE0E0E0);
-        aiText.setTextColor(0xFF000000);
-        aiText.setPadding(30, 20, 30, 20);
+        aiText.setText(text);
+        aiText.setBackgroundColor(Color.parseColor("#E0E0E0"));
+        aiText.setTextColor(Color.BLACK);
+        aiText.setPadding(32, 24, 32, 24);
+        aiText.setTextSize(16f);
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.gravity = android.view.Gravity.START;
-        params.setMargins(0, 16, 0, 16);
+        params.gravity = Gravity.START;
+        params.setMargins(0, 8, 100, 16);
         aiText.setLayoutParams(params);
 
-        chatMessagesContainer.postDelayed(() -> {
-            chatMessagesContainer.addView(aiText);
-            scrollToBottom();
-        }, 1000);
+        chatMessagesContainer.addView(aiText);
+        scrollToBottom();
+    }
+
+    private void generateAIResponse(String input) {
+        String aiReply;
+
+        if (input.contains("price") || input.contains("cost") || input.contains("how much")) {
+            aiReply = "Our base prices are: T-Shirts ($25), Mugs ($12), Bottles ($18), Pillows ($22), and Posters ($10). Does that help?";
+        } else if (input.contains("dtg") || input.contains("t-shirt") || input.contains("fabric")) {
+            aiReply = "For fabrics like T-Shirts and Pillows, we use DTG (Direct to Garment) printing. It ensures vibrant colors that last long!";
+        } else if (input.contains("laser") || input.contains("bottle") || input.contains("metal")) {
+            aiReply = "For metal items like Water Bottles, we exclusively use Laser Engraving. It looks premium and never fades.";
+        } else if (input.contains("hello") || input.contains("hi")) {
+            aiReply = "Hello there! How can I assist you with your PrintIt design today?";
+        } else {
+            aiReply = "That's a great question! I can help you with pricing, printing technologies (like DTG, Transfer or Laser), or material choices. What would you like to know?";
+        }
+
+        addAIMessage(aiReply);
     }
 
     private void scrollToBottom() {
-        chatScroll.post(() -> chatScroll.fullScroll(View.FOCUS_DOWN));
+        chatScroll.post(() -> chatScroll.fullScroll(ScrollView.FOCUS_DOWN));
     }
 }
