@@ -9,7 +9,7 @@
         android:id="@+id/chat_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/caicon_blue_primary"
+        android:background="#003366"
         android:padding="16dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PrintIt AI Assistant"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"/>
     </LinearLayout>
@@ -67,7 +67,6 @@
             android:layout_height="50dp"
             android:layout_weight="1"
             android:hint="Ask the AI something..."
-            android:textColorHint="@color/caicon_blue_primary"
             android:background="@android:color/transparent"
             android:textColor="@color/black"
             android:paddingStart="16dp"
@@ -79,7 +78,7 @@
             android:layout_height="50dp"
             android:src="@android:drawable/ic_menu_send"
             android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@color/caicon_blue_primary"/>
+            app:tint="#003366"/>
     </LinearLayout>
 
 </RelativeLayout>

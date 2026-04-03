@@ -23,8 +23,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         void onDeleteClick(int position, CartItem item);
     }
 
-    public interface OnItemCheckoutListener {
-        void onCheckoutClick(CartItem item);
+    public interface OnItemCheckoutListener void onCheckoutClick(CartItem item);
     }
 
     public CartAdapter(List<CartItem> cartItems, OnItemDeleteListener deleteListener, OnItemCheckoutListener checkoutListener) {
