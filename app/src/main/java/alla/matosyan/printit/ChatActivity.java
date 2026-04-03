@@ -1,8 +1,7 @@
 package alla.matosyan.printit;
 
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.Gravity;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -10,27 +9,12 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class ChatActivity extends AppCompatActivity {
 
     private EditText etChatInput;
     private ImageButton btnSendMessage;
     private LinearLayout chatMessagesContainer;
     private ScrollView chatScroll;
-
-    private final OkHttpClient client = new OkHttpClient();
-    public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,94 +29,57 @@ public class ChatActivity extends AppCompatActivity {
         btnSendMessage.setOnClickListener(v -> {
             String message = etChatInput.getText().toString().trim();
             if (!message.isEmpty()) {
-                addUserMessage(message);
+
+                addUserMessageToScreen(message);
+
                 etChatInput.setText("");
-                callGeminiAPI(message);
+
+                simulateAiResponse();
             }
         });
     }
 
-    private void callGeminiAPI(String userQuestion) {
-        String apiKey = "AIzaSyDuyCmnvFbDwFt-uX6-fx8qXkpetgSSAEE";
-
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
-
-
-        String promptContext = "You are a helpful AI assistant for a custom printing app called PrintIt. Keep your answers short, friendly, and to the point. The user asks: " + userQuestion;
-
-        String jsonBody = "{\"contents\": [{\"parts\": [{\"text\": \"" + promptContext + "\"}]}]}";
-        RequestBody body = RequestBody.create(jsonBody, JSON);
-        Request request = new Request.Builder().url(url).post(body).build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> addAIMessage("Sorry, I can't connect to the internet right now."));
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    try {
-                        String responseData = response.body().string();
-                        JSONObject jsonObject = new JSONObject(responseData);
-                        JSONArray candidates = jsonObject.getJSONArray("candidates");
-                        JSONObject content = candidates.getJSONObject(0).getJSONObject("content");
-                        JSONArray parts = content.getJSONArray("parts");
-                        String aiReply = parts.getJSONObject(0).getString("text");
-                        runOnUiThread(() -> addAIMessage(aiReply));
-
-                    } catch (Exception e) {
-                        runOnUiThread(() -> addAIMessage("Oops, I had trouble reading that."));
-                    }
-                } else {
-                    runOnUiThread(() -> addAIMessage("API Error: Check your API key."));
-                }
-            }
-        });
-    }
-
-    private void addUserMessage(String text) {
+    private void addUserMessageToScreen(String message) {
         TextView userText = new TextView(this);
-        userText.setText(text);
-        userText.setBackgroundColor(Color.parseColor("#003366"));
-        userText.setTextColor(Color.WHITE);
-        userText.setPadding(32, 24, 32, 24);
-        userText.setTextSize(16f);
+        userText.setText(message);
+        userText.setBackgroundColor(getResources().getColor(R.color.caicon_blue_primary));
+        userText.setTextColor(getResources().getColor(android.R.color.white));
+        userText.setPadding(30, 20, 30, 20);
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.gravity = Gravity.END;
-        params.setMargins(100, 16, 0, 16);
+        params.gravity = android.view.Gravity.END;
+        params.setMargins(0, 16, 0, 16);
         userText.setLayoutParams(params);
 
         chatMessagesContainer.addView(userText);
         scrollToBottom();
     }
 
-    private void addAIMessage(String text) {
+    private void simulateAiResponse() {
         TextView aiText = new TextView(this);
-        aiText.setText(text);
-        aiText.setBackgroundColor(Color.parseColor("#E0E0E0"));
-        aiText.setTextColor(Color.BLACK);
-        aiText.setPadding(32, 24, 32, 24);
-        aiText.setTextSize(16f);
+        aiText.setText("I am an AI placeholder! Soon, I will be connected to a real brain to answer that.");
+        aiText.setBackgroundColor(0xFFE0E0E0);
+        aiText.setTextColor(0xFF000000);
+        aiText.setPadding(30, 20, 30, 20);
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.gravity = Gravity.START;
-        params.setMargins(0, 8, 100, 16);
+        params.gravity = android.view.Gravity.START;
+        params.setMargins(0, 16, 0, 16);
         aiText.setLayoutParams(params);
 
-        chatMessagesContainer.addView(aiText);
-        scrollToBottom();
+        chatMessagesContainer.postDelayed(() -> {
+            chatMessagesContainer.addView(aiText);
+            scrollToBottom();
+        }, 1000);
     }
 
     private void scrollToBottom() {
-        chatScroll.post(() -> chatScroll.fullScroll(ScrollView.FOCUS_DOWN));
+        chatScroll.post(() -> chatScroll.fullScroll(View.FOCUS_DOWN));
     }
 }
