@@ -1,233 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/caicon_grey_background">
+    android:background="#F5F7FA"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:layout_height="match_parent" android:orientation="vertical"
         android:padding="16dp">
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp"
             app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            android:layout_marginBottom="24dp">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/caicon_blue_primary">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/banner_promo"
-                    android:alpha="0.6"/>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="20dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="spring sale"
-                        android:textColor="@color/white"
-                        android:textSize="24sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="20% off all t-shirts"
-                        android:textColor="@color/white"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-            </RelativeLayout>
-        </androidx.cardview.widget.CardView>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Trending Now"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="12dp"
-            android:textColor="@color/black"/>
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginBottom="24dp">
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:background="@android:color/white"
+                android:orientation="vertical"
+                android:padding="20dp">
 
-                <androidx.cardview.widget.CardView
-                    android:layout_width="200dp"
-                    android:layout_height="100dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginVertical="4dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/caicon_blue_primary">
-                    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:padding="16dp">
-                        <TextView android:id="@+id/news_title_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bestseller" android:textColor="@color/white" android:textStyle="bold" android:textSize="16sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_below="@id/news_title_1" android:layout_marginTop="4dp" android:text="Custom Mugs are selling fast!" android:textColor="#E0E0E0" android:textSize="12sp"/>
-                    </RelativeLayout>
-                </androidx.cardview.widget.CardView>
+                <TextView
+                    android:id="@+id/tvWelcomeTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome to PrintIt"
+                    android:textColor="#212121"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
-                <androidx.cardview.widget.CardView
-                    android:layout_width="200dp"
-                    android:layout_height="100dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginVertical="4dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="#424242">
-                    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:padding="16dp">
-                        <TextView android:id="@+id/news_title_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="New Arrival" android:textColor="@color/white" android:textStyle="bold" android:textSize="16sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_below="@id/news_title_2" android:layout_marginTop="4dp" android:text="Design your own Phone Case" android:textColor="#E0E0E0" android:textSize="12sp"/>
-                    </RelativeLayout>
-                </androidx.cardview.widget.CardView>
-
-                <androidx.cardview.widget.CardView
-                    android:layout_width="200dp"
-                    android:layout_height="100dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginVertical="4dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/caicon_blue_primary">
-                    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" android:padding="16dp">
-                        <TextView android:id="@+id/news_title_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Free Shipping" android:textColor="@color/white" android:textStyle="bold" android:textSize="16sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_below="@id/news_title_3" android:layout_marginTop="4dp" android:text="On all orders over $50" android:textColor="#E0E0E0" android:textSize="12sp"/>
-                    </RelativeLayout>
-                </androidx.cardview.widget.CardView>
+                <TextView
+                    android:id="@+id/tvUserRole"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Checking status..."
+                    android:textColor="#757575"
+                    android:textSize="14sp" />
 
             </LinearLayout>
-        </HorizontalScrollView>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Our Products"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            android:layout_marginStart="4dp"
             android:layout_marginBottom="12dp"
-            android:textColor="@color/black"/>
+            android:text="Select a Product"
+            android:textColor="#333333"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-        <GridLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvProductGrid"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:columnCount="2"
-            android:rowCount="3"
-            android:alignmentMode="alignMargins"
-            android:columnOrderPreserved="false">
+            android:layout_height="0dp" android:layout_weight="1" android:clipToPadding="false"
+            android:nestedScrollingEnabled="false"
+            android:paddingBottom="24dp" />
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_tshirt"
-                android:layout_width="0dp"
-                android:layout_height="160dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="#424242"
-                app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_tshirt" android:scaleType="fitCenter"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="t-shirt" android:textColor="@color/white" android:layout_marginTop="8dp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_mug"
-                android:layout_width="0dp"
-                android:layout_height="160dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="#424242"
-                app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_mug" android:scaleType="fitCenter"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="mug" android:textColor="@color/white" android:layout_marginTop="8dp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_bottle"
-                android:layout_width="0dp"
-                android:layout_height="160dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="#424242"
-                app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_bottle" android:scaleType="fitCenter"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="water bottle" android:textColor="@color/white" android:layout_marginTop="8dp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_phone"
-                android:layout_width="0dp"
-                android:layout_height="160dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="#424242"
-                app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_phone" android:scaleType="fitCenter"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="phone case" android:textColor="@color/white" android:layout_marginTop="8dp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_pillow"
-                android:layout_width="0dp"
-                android:layout_height="160dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="#424242"
-                app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_pillow" android:scaleType="fitCenter"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="pillow" android:textColor="@color/white" android:layout_marginTop="8dp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_poster"
-                android:layout_width="0dp"
-                android:layout_height="160dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="#424242"
-                app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                    <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@drawable/blank_poster" android:scaleType="fitCenter"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="poster" android:textColor="@color/white" android:layout_marginTop="8dp"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-        </GridLayout>
     </LinearLayout>
+
 </androidx.core.widget.NestedScrollView>

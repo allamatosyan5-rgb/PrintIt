@@ -6,10 +6,11 @@
     android:background="@color/caicon_blue_primary">
 
     <ImageView
-        android:id="@+id/splash_logo"
+        android:id="@+id/prinit_logo"
         android:layout_width="250dp"
         android:layout_height="250dp"
-        android:src="@drawable/printit_logo" app:layout_constraintBottom_toTopOf="@+id/splash_title"
+        android:src="@drawable/printit_logo"
+        app:layout_constraintBottom_toTopOf="@+id/splash_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,7 +28,7 @@
         app:layout_constraintBottom_toTopOf="@+id/splash_tagline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/splash_logo" />
+        app:layout_constraintTop_toBottomOf="@+id/prinit_logo" />
 
     <TextView
         android:id="@+id/splash_tagline"

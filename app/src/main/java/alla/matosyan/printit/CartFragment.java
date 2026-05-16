@@ -1,104 +1,103 @@
 package alla.matosyan.printit;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
+import android.widget.Button;
+import android.widget.TextView;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class CartFragment extends Fragment {
 
-    private RecyclerView recyclerView;
-    private CartAdapter adapter;
-    private List<CartItem> cartItemList;
-    private FirebaseFirestore db;
+    private RecyclerView rvCartItems;
+    private TextView tvTotalPrice;
+    private Button btnContinueShopping;
+    private View bottomCheckoutBar, layoutEmptyCart;
+
+    private final ActivityResultLauncher<Intent> checkoutLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    CartManager.loadCart(getContext());
+                    updateCartUI();
+                }
+            }
+    );
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.fragment_cart, container, false);
 
-        db = FirebaseFirestore.getInstance();
-        recyclerView = view.findViewById(R.id.recycler_cart);
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvCartItems = view.findViewById(R.id.rvCartItems);
+        tvTotalPrice = view.findViewById(R.id.tvTotalPrice);
+        bottomCheckoutBar = view.findViewById(R.id.bottomCheckoutBar);
+        layoutEmptyCart = view.findViewById(R.id.layoutEmptyCart);
+        btnContinueShopping = view.findViewById(R.id.btnContinueShopping);
 
-        cartItemList = new ArrayList<>();
+        rvCartItems.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new CartAdapter(cartItemList,
+        if (CartManager.cartList.isEmpty()) {
+            CartManager.loadCart(getContext());
+        }
 
+        updateCartUI();
 
-                new CartAdapter.OnItemDeleteListener() {
-                    @Override
-                    public void onDeleteClick(int position, CartItem item) {
-                        deleteItemFromCart(position, item);
-                    }
-                },
-
-                new CartAdapter.OnItemCheckoutListener() {
-                    @Override
-                    public void onCheckoutClick(CartItem item) {
-
-                        Intent intent = new Intent(requireContext(), CheckoutActivity.class);
-                        intent.putExtra("CART_ITEM_ID", item.getDocumentId());
-                        startActivity(intent);
-                    }
-                }
-        );
-
-        recyclerView.setAdapter(adapter);
-
-        loadCartItems();
+        btnContinueShopping.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).bottomNavigationView.setSelectedItemId(R.id.nav_home);
+            }
+        });
 
         return view;
     }
 
-    private void loadCartItems() {
-        db.collection("cart_items").get().addOnSuccessListener(queryDocumentSnapshots -> {
-            cartItemList.clear();
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+    private void updateCartUI() {
+        if (CartManager.cartList.isEmpty()) {
+            rvCartItems.setVisibility(View.GONE);
+            bottomCheckoutBar.setVisibility(View.GONE);
+            layoutEmptyCart.setVisibility(View.VISIBLE);
+        } else {
+            rvCartItems.setVisibility(View.VISIBLE);
+            bottomCheckoutBar.setVisibility(View.VISIBLE);
+            layoutEmptyCart.setVisibility(View.GONE);
 
-                CartItem item = document.toObject(CartItem.class);
-
-                item.setDocumentId(document.getId());
-
-                cartItemList.add(item);
+            double total = 0.0;
+            for (CartItem item : CartManager.cartList) {
+                total += item.getPrice();
             }
-            adapter.notifyDataSetChanged();
-        }).addOnFailureListener(e -> {
-            if (getContext() != null) {
-                Toast.makeText(getContext(), "Failed to load cart", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+            tvTotalPrice.setText(String.format("$%.2f", total));
 
-    private void deleteItemFromCart(int position, CartItem item) {
+            CartAdapter adapter = new CartAdapter(CartManager.cartList, new CartAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(int position) {
 
-        db.collection("cart_items").document(item.getDocumentId()).delete()
-                .addOnSuccessListener(aVoid -> {
-                    cartItemList.remove(position);
-                    adapter.notifyItemRemoved(position);
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(), "Item removed", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(), "Failed to delete item", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                }
+
+                @Override
+                public void onBuyClick(int position) {
+                    Intent intent = new Intent(getContext(), CheckOutActivity.class);
+                    intent.putExtra("TARGET_ITEM_INDEX", position);
+                    checkoutLauncher.launch(intent);
+                }
+
+                @Override
+                public void onDeleteClick(int position) {
+                    CartManager.cartList.remove(position);
+                    CartManager.saveCart(getContext());
+                    updateCartUI();
+                }
+            });
+            rvCartItems.setAdapter(adapter);
+        }
     }
 }

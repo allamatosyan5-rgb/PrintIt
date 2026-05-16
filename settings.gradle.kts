@@ -16,9 +16,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // The magic line for PhotoView, properly formatted for Kotlin DSL
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
 rootProject.name = "PrintIt"
 include(":app")
- 

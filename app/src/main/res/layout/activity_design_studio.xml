@@ -1,197 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/caicon_blue_primary">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#F5F7FA"
+    android:gravity="center_horizontal">
 
     <TextView
-        android:id="@+id/tv_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Design Your T-Shirt"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@color/white"
-        android:gravity="center"
-        android:padding="16dp"
-        android:layout_alignParentTop="true"/>
-
-    <RelativeLayout
-        android:id="@+id/shirt_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/tv_title"
-        android:layout_above="@id/control_panel"
-        android:layout_margin="16dp"
-        android:background="@color/white"
-        android:elevation="4dp">
-
-        <ImageView
-            android:id="@+id/iv_tshirt_base"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:src="@drawable/blank_tshirt" />
-
-        <ImageView
-            android:id="@+id/iv_custom_design"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_centerInParent="true"
-            android:scaleType="fitCenter"
-            android:src="@android:color/transparent" />
-
-        <EditText
-            android:id="@+id/tv_custom_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:hint="Type Here"
-            android:textColorHint="#757575"
-            android:background="@android:color/transparent"
-            android:textColor="@android:color/black"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:padding="10dp"/>
-
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/control_panel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/bottom_buttons"
-        android:orientation="vertical"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Text Size"
-            android:textColor="@color/white"/>
-        <SeekBar
-            android:id="@+id/textSizeSlider"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="80"
-            android:progress="30" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Image Size"
-            android:textColor="@color/white"
-            android:layout_marginTop="8dp"/>
-        <SeekBar
-            android:id="@+id/imageSizeSlider"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="200"
-            android:progress="100" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/bottom_buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/printer_selection_container"
-        android:orientation="horizontal"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp">
-
-        <Button
-            android:id="@+id/btn_upload_design"
-            android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_weight="1"
-            android:text="Add Photo"
-            android:textColor="@color/caicon_blue_primary"
-            android:backgroundTint="@color/white"
-            app:cornerRadius="12dp"
-            android:layout_marginEnd="8dp"/>
-
-        <Button
-            android:id="@+id/btn_add_text"
-            android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_weight="1"
-            android:text="Add Text"
-            android:textColor="@color/caicon_blue_primary"
-            android:backgroundTint="@color/white"
-            app:cornerRadius="12dp"
-            android:layout_marginStart="8dp"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/printer_selection_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/tv_product_price"
-        android:orientation="vertical"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Select Printing Method"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp"/>
-
-        <Spinner
-            android:id="@+id/spinner_studio_printer"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@android:drawable/btn_dropdown" />
-
-        <TextView
-            android:id="@+id/tv_studio_printer_warning"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FFCDD2"
-            android:textSize="12sp"
-            android:textStyle="italic"
-            android:layout_marginTop="4dp"/>
-    </LinearLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_chat"
+        android:id="@+id/tvDesignTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/tv_product_price"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="48dp"
-        android:contentDescription="Ask AI Chatbot"
-        android:src="@android:drawable/ic_dialog_info"
-        app:backgroundTint="@color/white"
-        app:tint="@color/caicon_blue_primary" />
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="32dp"
+        android:text="Loading Product..."
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#333333" />
 
-    <TextView
-        android:id="@+id/tv_product_price"
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="550dp"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp">
+
+        <RelativeLayout
+            android:id="@+id/designCanvas"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white">
+
+            <ImageView
+                android:id="@+id/ivProductBackground"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:scaleType="centerInside" />
+
+            <FrameLayout
+                android:id="@+id/safeZone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipChildren="true" />
+
+        </RelativeLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/btn_add_to_cart"
-        android:text="Total: $0.00"
-        android:textColor="@color/white"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnUploadDesign"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="ADD IMAGE"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/caicon_blue_primary" />
+
+        <Button
+            android:id="@+id/btnAddText"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="ADD TEXT"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/caicon_blue_primary" />
+    </LinearLayout>
 
     <Button
-        android:id="@+id/btn_add_to_cart"
+        android:id="@+id/btnAddToCart"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:text="Add to Cart"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:text="ADD TO CART"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:textColor="@color/caicon_blue_primary"
-        android:backgroundTint="@color/white"
-        app:cornerRadius="12dp"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"/>
+        android:backgroundTint="#FFFFFF"
+        app:strokeColor="@color/caicon_blue_primary"
+        app:strokeWidth="2dp" />
 
-</RelativeLayout>
+</LinearLayout>

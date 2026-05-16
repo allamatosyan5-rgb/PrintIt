@@ -1,128 +1,153 @@
 package alla.matosyan.printit;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.signature.ObjectKey;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 public class ProfileFragment extends Fragment {
 
-    private TextView tvName, tvEmail;
-    private ImageView profileImage;
-    private FirebaseAuth mAuth;
+    private TextView tvProfileName, tvProfileEmail;
+    private Button btnLogout, btnEditProfile, btnShippingInfo, btnDeleteAccount;
     private FirebaseFirestore db;
-    private FirebaseStorage storage;
-    private Uri imageUri;
-
-    private final ActivityResultLauncher<String> galleryLauncher = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            uri -> {
-                if (uri != null) {
-                    imageUri = uri;
-                    profileImage.setImageURI(uri);
-                    uploadProfileImage();
-                }
-            }
-    );
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        mAuth = FirebaseAuth.getInstance();
+        tvProfileName = view.findViewById(R.id.tvProfileName);
+        tvProfileEmail = view.findViewById(R.id.tvProfileEmail);
+        btnLogout = view.findViewById(R.id.btnLogout);
+        btnEditProfile = view.findViewById(R.id.btnEditProfile);
+        btnShippingInfo = view.findViewById(R.id.btnShippingInfo);
+        btnDeleteAccount = view.findViewById(R.id.btnDeleteAccount);
+
         db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
 
-        tvName = view.findViewById(R.id.profile_name);
-        tvEmail = view.findViewById(R.id.profile_email);
-        profileImage = view.findViewById(R.id.profile_image);
-        Button btnOrders = view.findViewById(R.id.btn_my_orders);
-        Button btnLogout = view.findViewById(R.id.btn_logout);
-
-        loadUserData();
-
-        profileImage.setOnClickListener(v -> galleryLauncher.launch("image/*"));
-
-        btnOrders.setOnClickListener(v -> {
-            Toast.makeText(getActivity(), "Opening Orders...", Toast.LENGTH_SHORT).show();
+        btnEditProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), EditProfileActivity.class);
+            startActivity(intent);
         });
 
         btnLogout.setOnClickListener(v -> {
-            mAuth.signOut();
+            FirebaseAuth.getInstance().signOut();
+            Toast.makeText(getContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(getActivity(), LoginActivity.class));
-            getActivity().finish();
+            if (getActivity() != null) {
+                getActivity().finish();
+            }
+        });
+
+        btnShippingInfo.setOnClickListener(v -> Toast.makeText(getContext(), "Shipping coming soon!", Toast.LENGTH_SHORT).show());
+
+        btnDeleteAccount.setOnClickListener(v -> {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+                String userId = user.getUid();
+
+                db.collection("Orders")
+                        .whereEqualTo("userId", userId)
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            for (DocumentSnapshot document : queryDocumentSnapshots) {
+                                db.collection("Orders").document(document.getId()).delete();
+                            }
+
+                            db.collection("Users").document(userId).delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        user.delete().addOnCompleteListener(task -> {
+                                            if (task.isSuccessful()) {
+                                                if (getContext() != null) {
+                                                    Toast.makeText(getContext(), "Account and all history deleted.", Toast.LENGTH_SHORT).show();
+                                                }
+                                                startActivity(new Intent(getActivity(), LoginActivity.class));
+                                                if (getActivity() != null) {
+                                                    getActivity().finish();
+                                                }
+                                            } else {
+                                                if (getContext() != null) {
+                                                    Toast.makeText(getContext(), "Failed to delete auth account.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+                                    });
+                        })
+                        .addOnFailureListener(e -> {
+                            if (getContext() != null) {
+                                Toast.makeText(getContext(), "Error connecting to database.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
         });
 
         return view;
     }
 
-    private void loadUserData() {
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            tvEmail.setText(user.getEmail());
-
-            db.collection("Users").document(user.getUid()).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists() && isAdded()) {
-                            tvName.setText(documentSnapshot.getString("fullName"));
-                            String photoUrl = documentSnapshot.getString("profileImageUrl");
-
-                            if (photoUrl != null && !photoUrl.isEmpty()) {
-                                Glide.with(this)
-                                        .load(photoUrl)
-                                        .signature(new ObjectKey(System.currentTimeMillis()))
-                                        .placeholder(R.drawable.profile_placeholder)
-                                        .into(profileImage);
-                            }
-                        }
-                    });
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadUserData();
     }
 
-    private void uploadProfileImage() {
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null || imageUri == null) return;
+    private void loadUserData() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        Toast.makeText(getContext(), "Updating Profile...", Toast.LENGTH_SHORT).show();
-        StorageReference fileRef = storage.getReference().child("profile_pics/" + user.getUid() + ".jpg");
+        if (currentUser != null) {
+            String email = currentUser.getEmail();
+            tvProfileEmail.setText(email != null ? email : "No Email Found");
 
-        fileRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-            fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                db.collection("Users").document(user.getUid())
-                        .update("profileImageUrl", uri.toString())
-                        .addOnSuccessListener(aVoid -> {
-                            if (isAdded()) {
-                                Glide.with(this)
-                                        .load(uri)
-                                        .signature(new ObjectKey(System.currentTimeMillis()))
-                                        .circleCrop()
-                                        .into(profileImage);
-                                Toast.makeText(getContext(), "Profile Photo Updated!", Toast.LENGTH_SHORT).show();
+            String authName = currentUser.getDisplayName();
+            if (authName != null && !authName.isEmpty()) {
+                tvProfileName.setText(authName);
+            } else {
+                tvProfileName.setText("Loading...");
+            }
+
+            String uid = currentUser.getUid();
+
+            db.collection("Users").document(uid).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String realName = documentSnapshot.getString("fullName");
+                            if (realName == null) {
+                                realName = documentSnapshot.getString("name");
                             }
-                        });
-            });
-        }).addOnFailureListener(e -> Toast.makeText(getContext(), "Upload Failed", Toast.LENGTH_SHORT).show());
+
+                            if (realName != null && !realName.isEmpty()) {
+                                tvProfileName.setText(realName);
+                            } else if (authName == null || authName.isEmpty()) {
+                                tvProfileName.setText("Name Not Set");
+                            }
+
+                        } else if (authName == null || authName.isEmpty()) {
+                            tvProfileName.setText("Name Not Set");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        if (authName == null || authName.isEmpty()) {
+                            tvProfileName.setText("Error loading data");
+                        }
+                    });
+        } else {
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Please log in to continue.", Toast.LENGTH_SHORT).show();
+            }
+            startActivity(new Intent(getActivity(), LoginActivity.class));
+            if (getActivity() != null) {
+                getActivity().finish();
+            }
+        }
     }
 }
