@@ -4,26 +4,32 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import java.util.List;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
-    private List<CartItem> cartList;
-    private OnItemClickListener listener;
+    private List<CartItem> cartItems;
+    private OnItemDeleteListener deleteListener;
+    private OnItemCheckoutListener checkoutListener;
 
-    public interface OnItemClickListener {
-        void onItemClick(int position);
-        void onBuyClick(int position);
-        void onDeleteClick(int position);
+    public interface OnItemDeleteListener {
+        void onDeleteClick(int position, CartItem item);
     }
 
-    public CartAdapter(List<CartItem> cartList, OnItemClickListener listener) {
-        this.cartList = cartList;
-        this.listener = listener;
+    public interface OnItemCheckoutListener void onCheckoutClick(CartItem item);
+    }
+
+    public CartAdapter(List<CartItem> cartItems, OnItemDeleteListener deleteListener, OnItemCheckoutListener checkoutListener) {
+        this.cartItems = cartItems;
+        this.deleteListener = deleteListener;
+        this.checkoutListener = checkoutListener;
     }
 
     @NonNull
@@ -35,37 +41,78 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
-        CartItem item = cartList.get(position);
-        holder.tvName.setText(item.getName());
-        holder.tvPrice.setText(String.format("$%.2f", item.getPrice()));
+        CartItem item = cartItems.get(position);
 
-        if (item.getImage() != null) {
-            holder.ivImage.setImageBitmap(item.getImage());
+        holder.tvTextPreview.setText("Text: " + item.getText());
+        holder.tvItemType.setText(item.getItemType());
+        holder.tvItemPrice.setText(String.format("$%.2f", item.getPrice()));
+
+        if (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(item.getImageUrl())
+                    .into(holder.ivItemImage);
+        } else {
+            String type = item.getItemType();
+
+            if (type != null) {
+                switch (type) {
+                    case "Mug":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_mug);
+                        break;
+                    case "Water Bottle":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_bottle);
+                        break;
+                    case "Phone Case":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_phone);
+                        break;
+                    case "Pillow":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_pillow);
+                        break;
+                    case "Poster":
+                        holder.ivItemImage.setImageResource(R.drawable.blank_poster);
+                        break;
+                    default:
+                        holder.ivItemImage.setImageResource(R.drawable.blank_tshirt);
+                        break;
+                }
+            } else {
+                holder.ivItemImage.setImageResource(R.drawable.blank_tshirt);
+            }
         }
+        // ---------------------------------------------------------------------
 
-        holder.itemView.setOnClickListener(v -> listener.onItemClick(position));
-        holder.btnBuy.setOnClickListener(v -> listener.onBuyClick(position));
-        holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(position));
+        holder.btnDelete.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.onDeleteClick(position, item);
+            }
+        });
+
+        holder.btnCheckout.setOnClickListener(v -> {
+            if (checkoutListener != null) {
+                checkoutListener.onCheckoutClick(item);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return cartList.size();
+        return cartItems.size();
     }
 
     public static class CartViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvPrice;
-        ImageView ivImage;
-        Button btnBuy;
-        ImageView btnDelete;
+        ImageView ivItemImage;
+        TextView tvItemType, tvTextPreview, tvItemPrice;
+        ImageButton btnDelete;
+        Button btnCheckout;
 
         public CartViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.tvCartItemName);
-            tvPrice = itemView.findViewById(R.id.tvCartItemPrice);
-            ivImage = itemView.findViewById(R.id.ivCartItemImage);
-            btnBuy = itemView.findViewById(R.id.btnBuy);
-            btnDelete = itemView.findViewById(R.id.btnDelete);
+            ivItemImage = itemView.findViewById(R.id.cart_item_image);
+            tvItemType = itemView.findViewById(R.id.cart_item_type);
+            tvTextPreview = itemView.findViewById(R.id.cart_item_text_preview);
+            btnDelete = itemView.findViewById(R.id.btn_delete_item);
+            tvItemPrice = itemView.findViewById(R.id.cart_item_price);
+            btnCheckout = itemView.findViewById(R.id.btn_checkout_item);
         }
     }
 }
