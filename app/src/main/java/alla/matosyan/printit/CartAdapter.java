@@ -23,7 +23,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         void onDeleteClick(int position, CartItem item);
     }
 
-    public interface OnItemCheckoutListener void onCheckoutClick(CartItem item);
+    public interface OnItemCheckoutListener {
+        void onCheckoutClick(CartItem item);
     }
 
     public CartAdapter(List<CartItem> cartItems, OnItemDeleteListener deleteListener, OnItemCheckoutListener checkoutListener) {
@@ -79,11 +80,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 holder.ivItemImage.setImageResource(R.drawable.blank_tshirt);
             }
         }
-        // ---------------------------------------------------------------------
 
         holder.btnDelete.setOnClickListener(v -> {
             if (deleteListener != null) {
-                deleteListener.onDeleteClick(position, item);
+                int currentPos = holder.getAdapterPosition();
+                if (currentPos != RecyclerView.NO_POSITION) {
+                    deleteListener.onDeleteClick(currentPos, item);
+                }
             }
         });
 
