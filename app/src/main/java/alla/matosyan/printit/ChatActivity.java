@@ -5,35 +5,46 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ChatActivity extends AppCompatActivity {
 
-    private EditText etChatInput;
-    private ImageButton btnSendMessage;
-    private LinearLayout chatMessagesContainer;
-    private ScrollView chatScroll;
+    private DrawerLayout drawerLayout;
+    private ImageButton btnOpenMenu;
+    private RecyclerView rvChatMessages;
+    private ImageButton btnAttach;
+    private EditText etChatMessage;
+    private ImageButton btnSendChat;
+    private LinearLayout btnNewChat;
+    private LinearLayout layoutSidebarHistory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat);
+        setContentView(R.layout.fragment_ai_chat);
 
-        etChatInput = findViewById(R.id.et_chat_input);
-        btnSendMessage = findViewById(R.id.btn_send_message);
-        chatMessagesContainer = findViewById(R.id.chat_messages_container);
-        chatScroll = findViewById(R.id.chat_scroll);
+        drawerLayout = findViewById(R.id.drawerLayout);
+        btnOpenMenu = findViewById(R.id.btnOpenMenu);
+        rvChatMessages = findViewById(R.id.rvChatMessages);
+        btnAttach = findViewById(R.id.btnAttach);
+        etChatMessage = findViewById(R.id.etChatMessage);
+        btnSendChat = findViewById(R.id.btnSendChat);
+        btnNewChat = findViewById(R.id.btnNewChat);
+        layoutSidebarHistory = findViewById(R.id.layoutSidebarHistory);
 
-        btnSendMessage.setOnClickListener(v -> {
-            String message = etChatInput.getText().toString().trim();
+        rvChatMessages.setLayoutManager(new LinearLayoutManager(this));
+
+        btnOpenMenu.setOnClickListener(v -> drawerLayout.openDrawer(android.view.Gravity.LEFT));
+
+        btnSendChat.setOnClickListener(v -> {
+            String message = etChatMessage.getText().toString().trim();
             if (!message.isEmpty()) {
-
                 addUserMessageToScreen(message);
-
-                etChatInput.setText("");
-
+                etChatMessage.setText("");
                 simulateAiResponse();
             }
         });
@@ -54,7 +65,7 @@ public class ChatActivity extends AppCompatActivity {
         params.setMargins(0, 16, 0, 16);
         userText.setLayoutParams(params);
 
-        chatMessagesContainer.addView(userText);
+        rvChatMessages.addView(userText);
         scrollToBottom();
     }
 
@@ -73,13 +84,15 @@ public class ChatActivity extends AppCompatActivity {
         params.setMargins(0, 16, 0, 16);
         aiText.setLayoutParams(params);
 
-        chatMessagesContainer.postDelayed(() -> {
-            chatMessagesContainer.addView(aiText);
+        rvChatMessages.postDelayed(() -> {
+            rvChatMessages.addView(aiText);
             scrollToBottom();
         }, 1000);
     }
 
     private void scrollToBottom() {
-        chatScroll.post(() -> chatScroll.fullScroll(View.FOCUS_DOWN));
+        if (rvChatMessages.getAdapter() != null) {
+            rvChatMessages.scrollToPosition(rvChatMessages.getAdapter().getItemCount() - 1);
+        }
     }
 }
