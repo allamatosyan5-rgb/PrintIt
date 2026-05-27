@@ -1,6 +1,8 @@
 package alla.matosyan.printit;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,15 +54,24 @@ public class ApprovedOrdersActivity extends AppCompatActivity {
         db.collection("Orders").whereEqualTo("status", "Approved").addSnapshotListener((value, error) -> {
             if (value != null) {
                 approvedOrders.clear();
+
                 for (QueryDocumentSnapshot doc : value) {
                     String docId = doc.getId();
-                    String product = doc.getString("productName");
+                    String visualId = doc.getId();
+
+                    String product = doc.getString("name");
                     String email = doc.getString("customerEmail");
                     String date = doc.getString("orderDate");
-                    String imageUrl = doc.getString("designPath");
-                    String visualId = "PRD-" + docId.substring(0, 5).toUpperCase();
+                    String imageUrl = doc.getString("imageUrl");
 
-                    approvedOrders.add(new Order(docId, visualId, product != null ? product : "Custom Order", email != null ? email : "Unknown", date != null ? date : "New", imageUrl));
+                    approvedOrders.add(new Order(
+                            docId,
+                            visualId,
+                            product != null ? product : "Custom Order",
+                            email != null ? email : "Unknown",
+                            date != null ? date : "New",
+                            imageUrl
+                    ));
                 }
                 adapter.notifyDataSetChanged();
 
@@ -96,22 +107,25 @@ public class ApprovedOrdersActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull ApprovedViewHolder holder, int position) {
             Order order = orders.get(position);
+
             holder.tvOrderId.setText(order.visualId);
             holder.tvProductType.setText(order.product);
             holder.tvCustomerEmail.setText(order.email);
             holder.tvOrderDate.setText(order.time);
 
             if (order.imageUrl != null && !order.imageUrl.isEmpty()) {
-                try {
-                    holder.ivDesignOverlay.setImageResource(android.R.color.transparent);
-                    byte[] decodedString = android.util.Base64.decode(order.imageUrl, android.util.Base64.DEFAULT);
-                    Glide.with(holder.itemView.getContext()).asBitmap().load(decodedString).into(holder.ivProductImage);
-                } catch (Exception e) {
-                    holder.ivProductImage.setImageResource(android.R.color.transparent);
+                if (holder.ivDesignOverlay != null) {
+                    holder.ivDesignOverlay.setVisibility(View.GONE);
                 }
+                Glide.with(holder.itemView.getContext())
+                        .load(order.imageUrl)
+                        .placeholder(new ColorDrawable(Color.LTGRAY))
+                        .into(holder.ivProductImage);
             } else {
-                holder.ivDesignOverlay.setImageResource(android.R.color.transparent);
                 holder.ivProductImage.setImageResource(R.drawable.blank_tshirt);
+                if (holder.ivDesignOverlay != null) {
+                    holder.ivDesignOverlay.setVisibility(View.GONE);
+                }
             }
 
             holder.itemView.setOnClickListener(v -> {
@@ -123,13 +137,16 @@ public class ApprovedOrdersActivity extends AppCompatActivity {
                 startActivity(intent);
             });
 
-            holder.btnApprove.setText("READY FOR CARRIER");
-            holder.btnApprove.setBackgroundColor(android.graphics.Color.parseColor("#FF9800"));
+            holder.btnApprove.setText("COMPLETE ORDER");
+            holder.btnApprove.setBackgroundColor(Color.parseColor("#4CAF50"));
 
             holder.btnApprove.setOnClickListener(v -> {
-                db.collection("Orders").document(order.documentId).update("status", "Ready for Carrier")
+                db.collection("Orders").document(order.documentId).update("status", "Completed")
                         .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(holder.itemView.getContext(), "Order ready for external carrier!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(holder.itemView.getContext(), "Order marked as Completed!", Toast.LENGTH_SHORT).show();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(holder.itemView.getContext(), "Network error. Could not complete order.", Toast.LENGTH_SHORT).show();
                         });
             });
         }

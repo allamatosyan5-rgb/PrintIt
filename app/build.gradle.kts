@@ -16,7 +16,6 @@ android {
     namespace = "alla.matosyan.printit"
     compileSdk = 34
 
-    // 1. ADD THIS TO ENABLE THE BRIDGE
     buildFeatures {
         buildConfig = true
     }
@@ -30,7 +29,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // 2. ADD THIS TO PULL THE KEY
+
         val apiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
         buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
     }
@@ -78,4 +77,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.stripe:stripe-android:20.36.1")
+    implementation("com.github.yukuku:ambilwarna:2.0.1")
 }

@@ -30,6 +30,8 @@ import androidx.core.content.FileProvider;
 import java.io.File;
 import java.io.InputStream;
 
+import yuku.ambilwarna.AmbilWarnaDialog;
+
 public class DesignStudioActivity extends AppCompatActivity {
 
     private Button btnUploadDesign, btnAddText, btnAddToCart;
@@ -41,6 +43,14 @@ public class DesignStudioActivity extends AppCompatActivity {
     private String selectedPrintType = "";
     private Uri currentPhotoUri;
 
+    private String currentAddedText = "";
+    private Uri currentRawImageUri = null;
+
+    // Employee Parameter Tracking
+    private String currentTextColor = "#1A365D";
+    private float currentTextSize = 32f;
+    private String currentTextFont = "Standard Bold";
+    private int currentImageSize = 100;
     private final ActivityResultLauncher<String> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> { if (uri != null) processImageUpload(uri, null); }
@@ -154,6 +164,10 @@ public class DesignStudioActivity extends AppCompatActivity {
         btnAddText.setOnClickListener(v -> showAddTextDialog());
 
         btnAddToCart.setOnClickListener(v -> {
+            btnAddToCart.setEnabled(false);
+
+            btnAddToCart.setText("Processing Design...");
+
             Bitmap finalProductImage = captureDesign(designCanvas);
             String finalItemName = (selectedProduct != null ? selectedProduct : "Item") + " (" + selectedPrintType + ")";
 
@@ -173,56 +187,54 @@ public class DesignStudioActivity extends AppCompatActivity {
 
             double finalPrice = basePrice + printMarkup;
 
-            CartManager.cartList.add(new CartItem(finalItemName, finalProductImage, finalPrice));
+            CartItem newItem = new CartItem(finalItemName, finalProductImage, finalPrice);
 
-            CartManager.saveCart(this);
+            newItem.setAddedText(currentAddedText);
+            newItem.setRawImageUri(currentRawImageUri);
+            newItem.setTextColor(currentTextColor);
+            newItem.setTextSize(currentTextSize);
+            newItem.setTextFont(currentTextFont);
+            newItem.setImageSize(currentImageSize);
 
-            Toast.makeText(this, "Added to Cart! ($" + String.format("%.2f", finalPrice) + ")", Toast.LENGTH_SHORT).show();
-            finish();
+            CartManager.cartList.add(newItem);
+
+            CartManager.saveItemToFirebase(newItem,
+                    () -> {
+                        Toast.makeText(this, "Added to Cart! ($" + String.format("%.2f", finalPrice) + ")", Toast.LENGTH_SHORT).show();
+                        finish();
+                    },
+                    () -> {
+                        Toast.makeText(this, "Couldn't add item. Please try again.", Toast.LENGTH_LONG).show();
+                        btnAddToCart.setEnabled(true);
+                        btnAddToCart.setText("Add to Cart");
+                    }
+            );
         });
     }
 
     private String getDefaultPrintType(String product) {
         if (product == null) return "Standard Print";
-
         String p = product.toLowerCase().trim();
-
         switch (p) {
             case "t-shirt":
-            case "pillow":
-                return "DTG";
-
+            case "pillow": return "DTG";
             case "mug":
             case "phone case":
-            case "poster":
-                return "Transfer Printing";
-
-
-            case "water bottle":
-                return "Laser Engraving";
-
-            default:
-                return "Standard Print";
+            case "poster": return "Transfer Printing";
+            case "water bottle": return "Laser Engraving";
+            default: return "Standard Print";
         }
     }
 
     private void showPrintTypeDialog() {
         String[] options;
-        if (selectedProduct.equalsIgnoreCase("T-Shirt")) {
-            options = new String[]{"DTG", "Transfer Printing"};
-        } else if (selectedProduct.equalsIgnoreCase("Mug")) {
-            options = new String[]{"Transfer Printing", "Laser Engraving"};
-        } else if (selectedProduct.equalsIgnoreCase("Water Bottle")) {
-            options = new String[]{"Laser Engraving", "Transfer Printing"};
-        } else if (selectedProduct.equalsIgnoreCase("Phone Case")) {
-            options = new String[]{"Transfer Printing", "Laser Engraving"};
-        } else if (selectedProduct.equalsIgnoreCase("Pillow")) {
-            options = new String[]{"DTG", "Transfer Printing"};
-        } else if (selectedProduct.equalsIgnoreCase("Poster")) {
-            options = new String[]{"Transfer Printing", "DTG"};
-        } else {
-            options = new String[]{"Standard Print"};
-        }
+        if (selectedProduct.equalsIgnoreCase("T-Shirt")) options = new String[]{"DTG", "Transfer Printing"};
+        else if (selectedProduct.equalsIgnoreCase("Mug")) options = new String[]{"Transfer Printing", "Laser Engraving"};
+        else if (selectedProduct.equalsIgnoreCase("Water Bottle")) options = new String[]{"Laser Engraving", "Transfer Printing"};
+        else if (selectedProduct.equalsIgnoreCase("Phone Case")) options = new String[]{"Transfer Printing", "Laser Engraving"};
+        else if (selectedProduct.equalsIgnoreCase("Pillow")) options = new String[]{"DTG", "Transfer Printing"};
+        else if (selectedProduct.equalsIgnoreCase("Poster")) options = new String[]{"Transfer Printing", "DTG"};
+        else options = new String[]{"Standard Print"};
 
         new AlertDialog.Builder(this)
                 .setTitle("Choose Print Technology")
@@ -273,9 +285,7 @@ public class DesignStudioActivity extends AppCompatActivity {
                     if (which == 0) {
                         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                             currentPhotoUri = createImageFileUri();
-                            if (currentPhotoUri != null) {
-                                cameraLauncher.launch(currentPhotoUri);
-                            }
+                            if (currentPhotoUri != null) cameraLauncher.launch(currentPhotoUri);
                         } else {
                             permissionLauncher.launch(Manifest.permission.CAMERA);
                         }
@@ -298,35 +308,29 @@ public class DesignStudioActivity extends AppCompatActivity {
     }
 
     private void processImageUpload(Uri uri, Bitmap bitmap) {
-        int width = 0;
-        int height = 0;
-
+        int width = 0, height = 0;
         if (bitmap != null) {
-            width = bitmap.getWidth();
-            height = bitmap.getHeight();
+            width = bitmap.getWidth(); height = bitmap.getHeight();
         } else if (uri != null) {
             try {
                 InputStream input = getContentResolver().openInputStream(uri);
                 android.graphics.BitmapFactory.Options options = new android.graphics.BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
                 android.graphics.BitmapFactory.decodeStream(input, null, options);
-                width = options.outWidth;
-                height = options.outHeight;
+                width = options.outWidth; height = options.outHeight;
                 if (input != null) input.close();
-            } catch (Exception e) {
-                width = 1000; height = 1000;
-            }
+            } catch (Exception e) { width = 1000; height = 1000; }
         }
 
         if (width < 1000 || height < 1000) {
             new AlertDialog.Builder(this)
                     .setTitle("Low Resolution")
                     .setMessage("This image is too small for high-quality printing. Please choose another high-resolution photo.")
-                    .setPositiveButton("OK", null)
-                    .show();
+                    .setPositiveButton("OK", null).show();
             return;
         }
 
+        if (uri != null) currentRawImageUri = uri;
         addImageToCanvas(uri, bitmap);
     }
 
@@ -337,7 +341,10 @@ public class DesignStudioActivity extends AppCompatActivity {
         builder.setView(input);
         builder.setPositiveButton("Add", (dialog, which) -> {
             String userText = input.getText().toString();
-            if (!userText.isEmpty()) addTextToCanvas(userText);
+            if (!userText.isEmpty()) {
+                currentAddedText = userText;
+                addTextToCanvas(userText);
+            }
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
@@ -362,10 +369,10 @@ public class DesignStudioActivity extends AppCompatActivity {
             new AlertDialog.Builder(this)
                     .setTitle("Edit Image")
                     .setItems(options, (dialog, which) -> {
-                        if (which == 0) {
-                            showSizeSliderDialog(newImage, true);
-                        } else if (which == 1) {
+                        if (which == 0) showSizeSliderDialog(newImage, true);
+                        else if (which == 1) {
                             safeZone.removeView(newImage);
+                            currentRawImageUri = null;
                         }
                     }).show();
         });
@@ -390,6 +397,7 @@ public class DesignStudioActivity extends AppCompatActivity {
         }
 
         newText.setTextSize(startingSize);
+        currentTextSize = startingSize;
 
         newText.setTextColor(ContextCompat.getColor(this, R.color.caicon_blue_primary));
         newText.setTypeface(null, Typeface.BOLD);
@@ -410,20 +418,19 @@ public class DesignStudioActivity extends AppCompatActivity {
             new AlertDialog.Builder(this)
                     .setTitle("Edit Text")
                     .setItems(options, (dialog, which) -> {
-                        if (which == 0) {
-                            showSizeSliderDialog(newText, false);
-                        } else if (which == 1) {
-                            showColorPickerDialog(newText);
-                        } else if (which == 2) {
-                            showFontPickerDialog(newText);
-                        } else if (which == 3) {
+                        if (which == 0) showSizeSliderDialog(newText, false);
+                        else if (which == 1) showColorPickerDialog(newText);
+                        else if (which == 2) showFontPickerDialog(newText);
+                        else if (which == 3) {
                             safeZone.removeView(newText);
+                            currentAddedText = "";
                         }
                     }).show();
         });
 
         safeZone.addView(newText);
     }
+
     private void showSizeSliderDialog(View targetView, boolean isImage) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Adjust Size");
@@ -453,10 +460,11 @@ public class DesignStudioActivity extends AppCompatActivity {
                     iv.getLayoutParams().height = newSize;
                     iv.requestLayout();
 
+                    currentImageSize = newSize;
+
                     iv.post(() -> {
                         float maxAllowedX = safeZone.getWidth() - iv.getWidth();
                         float maxAllowedY = safeZone.getHeight() - iv.getHeight();
-
                         if (iv.getX() > maxAllowedX) iv.setX(Math.max(0, maxAllowedX));
                         if (iv.getY() > maxAllowedY) iv.setY(Math.max(0, maxAllowedY));
                     });
@@ -466,12 +474,10 @@ public class DesignStudioActivity extends AppCompatActivity {
             });
         } else {
             TextView tv = (TextView) targetView;
-            float currentSize = tv.getTextSize();
             float minSize = dpToPx(12);
 
             android.text.TextPaint testPaint = new android.text.TextPaint(tv.getPaint());
             float calculatedMaxSize = minSize;
-
             float maxAllowedWidth = safeZone.getWidth() - dpToPx(30);
 
             testPaint.setTextSize(calculatedMaxSize);
@@ -482,7 +488,7 @@ public class DesignStudioActivity extends AppCompatActivity {
 
             float maxSize = calculatedMaxSize;
 
-            int progress = (int) (((currentSize - minSize) / (maxSize - minSize)) * 100);
+            int progress = (int) (((currentTextSize - minSize) / (maxSize - minSize)) * 100);
             seekBar.setProgress(Math.max(0, Math.min(100, progress)));
 
             seekBar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
@@ -491,10 +497,11 @@ public class DesignStudioActivity extends AppCompatActivity {
                     float newSize = minSize + (((float)progress / 100) * (maxSize - minSize));
                     tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newSize);
 
+                    currentTextSize = newSize;
+
                     tv.post(() -> {
                         float maxAllowedX = safeZone.getWidth() - tv.getWidth();
                         float maxAllowedY = safeZone.getHeight() - tv.getHeight();
-
                         if (tv.getX() > maxAllowedX) tv.setX(Math.max(0, maxAllowedX));
                         if (tv.getY() > maxAllowedY) tv.setY(Math.max(0, maxAllowedY));
                     });
@@ -511,41 +518,62 @@ public class DesignStudioActivity extends AppCompatActivity {
     }
 
     private void showColorPickerDialog(TextView targetText) {
+        String[] options = {"Color Palette", "Enter Hex Code"};
+        new AlertDialog.Builder(this)
+                .setTitle("Choose Color Method")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        int initialColor = targetText.getCurrentTextColor();
+                        AmbilWarnaDialog colorPickerDialog = new AmbilWarnaDialog(this, initialColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+                            @Override public void onCancel(AmbilWarnaDialog dialog) {}
+
+                            @Override
+                            public void onOk(AmbilWarnaDialog dialog, int color) {
+                                targetText.setTextColor(color);
+
+                                currentTextColor = String.format("#%06X", (0xFFFFFF & color));
+                                Toast.makeText(DesignStudioActivity.this, "Color applied!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        colorPickerDialog.show();
+                    } else if (which == 1) {
+                        showHexInputDialog(targetText);
+                    }
+                }).show();
+    }
+
+    private void showHexInputDialog(TextView targetText) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose Text Color");
+        builder.setTitle("Enter Hex Code");
+        builder.setMessage("Format: #RRGGBB");
 
-        android.widget.HorizontalScrollView scrollView = new android.widget.HorizontalScrollView(this);
-        scrollView.setHorizontalScrollBarEnabled(false);
+        final EditText input = new EditText(this);
+        input.setHint("#FFFFFF");
+        input.setSingleLine(true);
 
-        android.widget.LinearLayout colorContainer = new android.widget.LinearLayout(this);
-        colorContainer.setOrientation(android.widget.LinearLayout.HORIZONTAL);
-        colorContainer.setPadding(60, 50, 60, 50);
+        FrameLayout container = new FrameLayout(this);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(dpToPx(20), dpToPx(10), dpToPx(20), dpToPx(10));
+        input.setLayoutParams(params);
+        container.addView(input);
 
-        String[] hexColors = {"#000000", "#FFFFFF", "#1976D2", "#D32F2F", "#388E3C", "#FBC02D", "#8E24AA", "#FF9800", "#757575"};
+        builder.setView(container);
+        builder.setPositiveButton("Apply", (dialog, which) -> {
+            String hexCode = input.getText().toString().trim();
+            if (!hexCode.startsWith("#")) hexCode = "#" + hexCode;
 
-        for (String hex : hexColors) {
-            View colorButton = new View(this);
-            android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(dpToPx(45), dpToPx(45));
-            params.setMargins(0, 0, dpToPx(20), 0);
-            colorButton.setLayoutParams(params);
+            try {
+                int parsedColor = android.graphics.Color.parseColor(hexCode);
+                targetText.setTextColor(parsedColor);
+                currentTextColor = hexCode;
+                Toast.makeText(this, "Hex color applied!", Toast.LENGTH_SHORT).show();
+            } catch (IllegalArgumentException e) {
+                Toast.makeText(this, "Invalid Hex Code.", Toast.LENGTH_LONG).show();
+            }
+        });
 
-            android.graphics.drawable.GradientDrawable shape = new android.graphics.drawable.GradientDrawable();
-            shape.setShape(android.graphics.drawable.GradientDrawable.OVAL);
-            shape.setColor(android.graphics.Color.parseColor(hex));
-            shape.setStroke(dpToPx(2), android.graphics.Color.parseColor("#E0E0E0"));
-            colorButton.setBackground(shape);
-
-            colorButton.setOnClickListener(v -> {
-                targetText.setTextColor(android.graphics.Color.parseColor(hex));
-                Toast.makeText(this, "Color applied!", Toast.LENGTH_SHORT).show();
-            });
-
-            colorContainer.addView(colorButton);
-        }
-
-        scrollView.addView(colorContainer);
-        builder.setView(scrollView);
-        builder.setPositiveButton("Done", null);
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
     }
 
@@ -562,6 +590,7 @@ public class DesignStudioActivity extends AppCompatActivity {
                 .setTitle("Choose Font")
                 .setItems(fonts, (dialog, which) -> {
                     targetText.setTypeface(typefaces[which]);
+                    currentTextFont = fonts[which];
                 }).show();
     }
 

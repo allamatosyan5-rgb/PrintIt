@@ -1,8 +1,13 @@
 package alla.matosyan.printit;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,6 +49,32 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         }
 
         holder.itemView.setOnClickListener(v -> {
+            Context context = holder.itemView.getContext();
+
+            Dialog previewDialog = new Dialog(context);
+            previewDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+            ImageView fullSizeImage = new ImageView(context);
+            if (item.getImage() != null) {
+                fullSizeImage.setImageBitmap(item.getImage());
+            }
+            fullSizeImage.setAdjustViewBounds(true);
+            fullSizeImage.setPadding(60, 60, 60, 60);
+            fullSizeImage.setBackgroundColor(Color.WHITE);
+
+            previewDialog.setContentView(fullSizeImage);
+
+            if (previewDialog.getWindow() != null) {
+                previewDialog.getWindow().setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+
+                previewDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+
+            previewDialog.show();
+
             if (listener != null) {
                 int currentPos = holder.getAdapterPosition();
                 if (currentPos != RecyclerView.NO_POSITION) {

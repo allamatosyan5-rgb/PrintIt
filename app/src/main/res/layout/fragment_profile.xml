@@ -16,16 +16,25 @@
         android:elevation="4dp">
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:id="@+id/ivProfilePhoto"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:src="@drawable/ic_profile"
-            app:tint="#FFFFFF" />
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Tap photo to change"
+            android:textColor="#B3FFFFFF"
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/tvProfileName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:text="Loading..."
             android:textColor="#FFFFFF"
             android:textSize="22sp"
@@ -55,18 +64,6 @@
             android:layout_marginBottom="12dp"
             android:backgroundTint="#FFFFFF"
             android:text="Edit Profile Details"
-            android:textColor="#333333"
-            android:gravity="start|center_vertical"
-            android:paddingStart="24dp"
-            app:cornerRadius="8dp" />
-
-        <Button
-            android:id="@+id/btnShippingInfo"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginBottom="12dp"
-            android:backgroundTint="#FFFFFF"
-            android:text="Saved Addresses"
             android:textColor="#333333"
             android:gravity="start|center_vertical"
             android:paddingStart="24dp"

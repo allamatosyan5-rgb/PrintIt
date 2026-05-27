@@ -121,7 +121,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     finish();
                                 });
                             })
-                            .addOnFailureListener(e -> Toast.makeText(RegisterActivity.this, "Profile save failed.", Toast.LENGTH_SHORT).show());
+                            .addOnFailureListener(e -> Toast.makeText(RegisterActivity.this, "Database Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
                 }
             } else {
                 String error = task.getException() != null ? task.getException().getMessage() : "Registration failed";

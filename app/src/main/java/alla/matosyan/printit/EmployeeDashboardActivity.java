@@ -1,6 +1,8 @@
 package alla.matosyan.printit;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,22 +57,29 @@ public class EmployeeDashboardActivity extends AppCompatActivity {
     }
 
     private void fetchRealOrders() {
+        // Only fetch orders that need immediate attention
         db.collection("Orders").whereEqualTo("status", "Pending").addSnapshotListener((value, error) -> {
             if (value != null) {
                 pendingOrders.clear();
-                int orderNumber = 0;
 
                 for (QueryDocumentSnapshot doc : value) {
                     String docId = doc.getId();
-                    String product = doc.getString("productName");
+
+                    // UPDATED: Use the correct keys from our new Checkout system
+                    String visualId = doc.getString("orderId");
+                    String product = doc.getString("name");
                     String email = doc.getString("customerEmail");
                     String date = doc.getString("orderDate");
-                    String imageUrl = doc.getString("designPath");
+                    String imageUrl = doc.getString("imageUrl");
 
-                    String visualId = String.format("ORD-%06d", orderNumber);
-                    orderNumber++;
-
-                    pendingOrders.add(new Order(docId, visualId, product != null ? product : "Custom Order", email != null ? email : "Unknown", date != null ? date : "New", imageUrl));
+                    pendingOrders.add(new Order(
+                            docId,
+                            visualId != null ? visualId : "Unknown ID",
+                            product != null ? product : "Custom Order",
+                            email != null ? email : "Unknown Email",
+                            date != null ? date : "New",
+                            imageUrl
+                    ));
                 }
                 adapter.notifyDataSetChanged();
             }
@@ -101,38 +110,22 @@ public class EmployeeDashboardActivity extends AppCompatActivity {
             holder.tvCustomerEmail.setText(order.email);
             holder.tvOrderDate.setText(order.time);
 
+            // UPDATED: Cleaned up Glide loading (No Base64 logic!)
             if (order.imageUrl != null && !order.imageUrl.isEmpty()) {
-                try {
-                    holder.ivDesignOverlay.setImageResource(android.R.color.transparent);
-                    byte[] decodedString = android.util.Base64.decode(order.imageUrl, android.util.Base64.DEFAULT);
-                    Glide.with(holder.itemView.getContext())
-                            .asBitmap()
-                            .load(decodedString)
-                            .into(holder.ivProductImage);
-                } catch (Exception e) {
-                    holder.ivProductImage.setImageResource(android.R.color.transparent);
+                // Ensure the overlay is gone since the image is already flattened
+                if(holder.ivDesignOverlay != null) {
+                    holder.ivDesignOverlay.setVisibility(View.GONE);
                 }
-            } else {
-                holder.ivDesignOverlay.setImageResource(android.R.color.transparent);
-                String productName = (order.product != null) ? order.product.toLowerCase() : "";
 
-                if (productName.contains("pillow")) {
-                    holder.ivProductImage.setImageResource(R.drawable.blank_pillow);
-                } else if (productName.contains("mug")) {
-                    holder.ivProductImage.setImageResource(R.drawable.blank_mug);
-                } else if (productName.contains("bottle")) {
-                    holder.ivProductImage.setImageResource(R.drawable.blank_bottle);
-                } else if (productName.contains("phone")) {
-                    holder.ivProductImage.setImageResource(R.drawable.blank_phone);
-                } else if (productName.contains("poster")) {
-                    holder.ivProductImage.setImageResource(R.drawable.blank_poster);
-                } else if (productName.contains("shirt") || productName.contains("hoodie")) {
-                    holder.ivProductImage.setImageResource(R.drawable.blank_tshirt);
-                } else {
-                    holder.ivProductImage.setImageResource(android.R.color.transparent);
-                }
+                Glide.with(holder.itemView.getContext())
+                        .load(order.imageUrl)
+                        .placeholder(new ColorDrawable(Color.LTGRAY)) // Clean gray box while loading
+                        .into(holder.ivProductImage);
+            } else {
+                holder.ivProductImage.setImageDrawable(new ColorDrawable(Color.LTGRAY));
             }
 
+            // Move to Production Detail Screen
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(EmployeeDashboardActivity.this, OrderDetailsActivity.class);
                 intent.putExtra("ORDER_ID", order.visualId);
@@ -142,6 +135,7 @@ public class EmployeeDashboardActivity extends AppCompatActivity {
                 startActivity(intent);
             });
 
+            // Action: Approve Order
             holder.btnApprove.setOnClickListener(v -> {
                 db.collection("Orders").document(order.documentId).update("status", "Approved")
                         .addOnSuccessListener(aVoid -> {
@@ -170,6 +164,8 @@ public class EmployeeDashboardActivity extends AppCompatActivity {
                 tvOrderDate = itemView.findViewById(R.id.tvOrderDate);
                 btnApprove = itemView.findViewById(R.id.btnApprove);
                 ivProductImage = itemView.findViewById(R.id.ivProductImage);
+
+                // Keep this just in case your XML still has it, but it's hidden above
                 ivDesignOverlay = itemView.findViewById(R.id.ivDesignOverlay);
             }
         }

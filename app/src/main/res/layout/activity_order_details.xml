@@ -38,6 +38,76 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Production Specifications"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp"
+            android:textColor="#0A2540"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="#FAFAFA">
+
+                <TextView
+                    android:id="@+id/tvProductionText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:text="Printed Text: N/A"
+                    android:textColor="#333333"/>
+
+                <TextView
+                    android:id="@+id/tvProductionFont"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textSize="16sp"
+                    android:text="Font Style: N/A"
+                    android:textColor="#333333"/>
+
+                <TextView
+                    android:id="@+id/tvProductionSize"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textSize="16sp"
+                    android:text="Text Size: N/A"
+                    android:textColor="#333333"/>
+
+                <TextView
+                    android:id="@+id/tvProductionColor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textSize="16sp"
+                    android:text="Text Color: N/A"
+                    android:textColor="#333333"/>
+
+                <Button
+                    android:id="@+id/btnDownloadRawImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="DOWNLOAD PRODUCTIONFILE"
+                    android:backgroundTint="#0A2540"
+                    android:textColor="#FFFFFF"
+                    android:visibility="gone"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Customer Information"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -68,11 +138,39 @@
             android:textSize="16sp"
             android:text="Phone: Loading..."/>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/btnEmailCustomer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="EMAIL CUSTOMER"
+                android:backgroundTint="#0066CC"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/btnCallCustomer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="CALL CUSTOMER"
+                android:backgroundTint="#4CAF50"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/tvDetailAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:textSize="16sp"
             android:text="Address: Loading..."/>
 
@@ -94,21 +192,8 @@
             android:orientation="horizontal"
             android:visibility="gone">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@android:drawable/ic_dialog_info"
-                app:tint="#1976D2"
-                android:layout_marginEnd="8dp"/>
 
-            <TextView
-                android:id="@+id/tvShippingNotice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="When the shipping company is decided, shipping details will be available here."
-                android:textColor="#1976D2"
-                android:textSize="14sp"
-                android:textStyle="bold"/>
+
         </LinearLayout>
 
     </LinearLayout>

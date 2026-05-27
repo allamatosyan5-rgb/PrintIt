@@ -1,10 +1,15 @@
 package alla.matosyan.printit;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,10 +70,12 @@ public class OrderHistoryFragment extends Fragment {
                     if (value != null) {
                         myOrdersList.clear();
                         for (QueryDocumentSnapshot doc : value) {
-                            String product = doc.getString("productName");
+                            String orderId = doc.getId();
+
+                            String product = doc.getString("name");
                             String status = doc.getString("status");
                             String date = doc.getString("orderDate");
-                            String imageUrl = doc.getString("designPath");
+                            String imageUrl = doc.getString("imageUrl");
 
                             String price = "";
                             if (doc.get("price") != null) {
@@ -76,7 +83,8 @@ public class OrderHistoryFragment extends Fragment {
                             }
 
                             myOrdersList.add(new CustomerOrder(
-                                    product != null ? product : "Custom Order",
+                                    orderId,
+                                    product != null ? product : "Unknown Item",
                                     status != null ? status : "Processing",
                                     date != null ? date : "Recently",
                                     "$" + price,
@@ -89,9 +97,14 @@ public class OrderHistoryFragment extends Fragment {
     }
 
     private static class CustomerOrder {
-        String product, status, date, price, imageUrl;
-        CustomerOrder(String product, String status, String date, String price, String imageUrl) {
-            this.product = product; this.status = status; this.date = date; this.price = price; this.imageUrl = imageUrl;
+        String orderId, product, status, date, price, imageUrl;
+        CustomerOrder(String orderId, String product, String status, String date, String price, String imageUrl) {
+            this.orderId = orderId;
+            this.product = product;
+            this.status = status;
+            this.date = date;
+            this.price = price;
+            this.imageUrl = imageUrl;
         }
     }
 
@@ -115,35 +128,57 @@ public class OrderHistoryFragment extends Fragment {
             holder.tvPrice.setText(order.price);
 
             if (order.imageUrl != null && !order.imageUrl.isEmpty()) {
-                try {
-                    byte[] decodedString = android.util.Base64.decode(order.imageUrl, android.util.Base64.DEFAULT);
-                    Glide.with(holder.itemView.getContext())
-                            .asBitmap()
-                            .load(decodedString)
-                            .into(holder.ivProductImage);
-                } catch (Exception e) {
-                    holder.ivProductImage.setImageResource(android.R.color.transparent);
-                }
+                Glide.with(holder.itemView.getContext())
+                        .load(order.imageUrl)
+                        .placeholder(new ColorDrawable(Color.LTGRAY))
+                        .into(holder.ivProductImage);
             } else {
-                holder.ivProductImage.setImageResource(R.drawable.blank_tshirt);
+                holder.ivProductImage.setImageDrawable(new ColorDrawable(Color.LTGRAY));
             }
 
-            if ("Ready for Carrier".equalsIgnoreCase(order.status)) {
-                holder.tvStatus.setText("Status: Ready for Carrier (Shipping unavailable right now)");
-                holder.tvStatus.setTextColor(android.graphics.Color.parseColor("#FF9800"));
+
+
+            if ("Completed".equalsIgnoreCase(order.status)) {
+                holder.tvStatus.setText("Completed, check e-mail for shipping details.");
+                holder.tvStatus.setTextColor(Color.parseColor("#4CAF50"));
+            } else if ("Pending".equalsIgnoreCase(order.status)) {
+                holder.tvStatus.setText("Status: Pending");
+                holder.tvStatus.setTextColor(Color.parseColor("#1976D2"));
             } else {
                 holder.tvStatus.setText("Status: " + order.status);
-
-                if ("Rejected".equalsIgnoreCase(order.status)) {
-                    holder.tvStatus.setTextColor(android.graphics.Color.RED);
-                } else if ("Approved".equalsIgnoreCase(order.status)) {
-                    holder.tvStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
-                } else if ("Pending".equalsIgnoreCase(order.status)) {
-                    holder.tvStatus.setTextColor(android.graphics.Color.parseColor("#FF9800"));
-                } else {
-                    holder.tvStatus.setTextColor(android.graphics.Color.DKGRAY);
-                }
+                holder.tvStatus.setTextColor(Color.DKGRAY);
             }
+
+            holder.itemView.setOnClickListener(v -> {
+                Dialog previewDialog = new Dialog(holder.itemView.getContext());
+                previewDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+                ImageView fullSizeImage = new ImageView(holder.itemView.getContext());
+
+                if (order.imageUrl != null && !order.imageUrl.isEmpty()) {
+                    Glide.with(holder.itemView.getContext())
+                            .load(order.imageUrl)
+                            .placeholder(new ColorDrawable(Color.LTGRAY))
+                            .into(fullSizeImage);
+                } else {
+                    fullSizeImage.setImageDrawable(new ColorDrawable(Color.LTGRAY));
+                }
+
+                fullSizeImage.setAdjustViewBounds(true);
+                fullSizeImage.setPadding(60, 60, 60, 60);
+                fullSizeImage.setBackgroundColor(Color.WHITE);
+
+                previewDialog.setContentView(fullSizeImage);
+
+                if (previewDialog.getWindow() != null) {
+                    previewDialog.getWindow().setLayout(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    );
+                    previewDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                }
+                previewDialog.show();
+            });
         }
 
         @Override
@@ -152,6 +187,7 @@ public class OrderHistoryFragment extends Fragment {
         class OrderViewHolder extends RecyclerView.ViewHolder {
             TextView tvProductName, tvStatus, tvDate, tvPrice;
             ImageView ivProductImage;
+            RatingBar rbOrderRating;
 
             OrderViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -160,6 +196,7 @@ public class OrderHistoryFragment extends Fragment {
                 tvDate = itemView.findViewById(R.id.tvHistoryDate);
                 tvPrice = itemView.findViewById(R.id.tvHistoryPrice);
                 ivProductImage = itemView.findViewById(R.id.ivHistoryProductImage);
+                rbOrderRating = itemView.findViewById(R.id.rbOrderRating);
             }
         }
     }

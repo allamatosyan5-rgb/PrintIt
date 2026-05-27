@@ -3,7 +3,6 @@ package alla.matosyan.printit;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -37,6 +36,10 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import okhttp3.Call;
@@ -48,7 +51,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AiChatFragment extends Fragment {
 
@@ -254,65 +259,92 @@ public class AiChatFragment extends Fragment {
     }
 
     private void saveAllSessions() {
-        if (getContext() == null || currentSession == null) return;
-        SharedPreferences prefs = getContext().getSharedPreferences("AiChatPrefs", Context.MODE_PRIVATE);
-        try {
-            JSONArray sessionsArray = new JSONArray();
-            for (ChatSession session : allSessions) {
-                if (session.messages.size() > 1 || session.id.equals(currentSession.id)) {
-                    JSONObject sessionObj = new JSONObject();
-                    sessionObj.put("id", session.id);
-                    sessionObj.put("title", session.title);
-                    sessionObj.put("isPinned", session.isPinned);
+        if (currentSession == null) return;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
 
-                    JSONArray msgsArray = new JSONArray();
-                    for (ChatMessage msg : session.messages) {
-                        JSONObject msgObj = new JSONObject();
-                        msgObj.put("text", msg.text);
-                        msgObj.put("isUser", msg.isUser);
-                        if (msg.imageUri != null) msgObj.put("imageUri", msg.imageUri);
-                        msgsArray.put(msgObj);
-                    }
-                    sessionObj.put("messages", msgsArray);
-                    sessionsArray.put(sessionObj);
+        List<Map<String, Object>> sessionsList = new ArrayList<>();
+        for (ChatSession session : allSessions) {
+            if (session.messages.size() > 1 || session.id.equals(currentSession.id)) {
+                Map<String, Object> sessionMap = new HashMap<>();
+                sessionMap.put("id", session.id);
+                sessionMap.put("title", session.title);
+                sessionMap.put("isPinned", session.isPinned);
+
+                List<Map<String, Object>> messagesList = new ArrayList<>();
+                for (ChatMessage msg : session.messages) {
+                    Map<String, Object> msgMap = new HashMap<>();
+                    msgMap.put("text", msg.text);
+                    msgMap.put("isUser", msg.isUser);
+                    if (msg.imageUri != null) msgMap.put("imageUri", msg.imageUri);
+                    messagesList.add(msgMap);
                 }
+                sessionMap.put("messages", messagesList);
+                sessionsList.add(sessionMap);
             }
-            prefs.edit().putString("all_sessions_db", sessionsArray.toString()).apply();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("sessionsData", sessionsList);
+
+        FirebaseFirestore.getInstance().collection("Users").document(user.getUid())
+                .collection("ChatData").document("AiHistory")
+                .set(data)
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Failed to sync chat to cloud", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
+    @SuppressWarnings("unchecked")
     private void loadAllSessions() {
-        if (getContext() == null) return;
-        SharedPreferences prefs = getContext().getSharedPreferences("AiChatPrefs", Context.MODE_PRIVATE);
-        String data = prefs.getString("all_sessions_db", null);
-        allSessions.clear();
-
-        if (data != null) {
-            try {
-                JSONArray sessionsArray = new JSONArray(data);
-                for (int i = 0; i < sessionsArray.length(); i++) {
-                    JSONObject sessionObj = sessionsArray.getJSONObject(i);
-                    ChatSession session = new ChatSession();
-                    session.id = sessionObj.getString("id");
-                    session.title = sessionObj.getString("title");
-                    session.isPinned = sessionObj.optBoolean("isPinned", false);
-                    session.messages = new ArrayList<>();
-
-                    JSONArray msgsArray = sessionObj.getJSONArray("messages");
-                    for (int j = 0; j < msgsArray.length(); j++) {
-                        JSONObject msgObj = msgsArray.getJSONObject(j);
-                        String uri = msgObj.has("imageUri") ? msgObj.getString("imageUri") : null;
-                        session.messages.add(new ChatMessage(msgObj.getString("text"), msgObj.getBoolean("isUser"), uri));
-                    }
-                    if (session.messages.size() > 1) allSessions.add(session);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            createNewSession();
+            return;
         }
-        createNewSession();
+
+        FirebaseFirestore.getInstance().collection("Users").document(user.getUid())
+                .collection("ChatData").document("AiHistory")
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    allSessions.clear();
+                    if (documentSnapshot.exists() && documentSnapshot.contains("sessionsData")) {
+                        List<?> sessionsList = (List<?>) documentSnapshot.get("sessionsData");
+                        if (sessionsList != null) {
+                            for (Object sessionObj : sessionsList) {
+                                if (sessionObj instanceof Map) {
+                                    Map<String, Object> sessionMap = (Map<String, Object>) sessionObj;
+                                    ChatSession session = new ChatSession();
+                                    session.id = (String) sessionMap.get("id");
+                                    session.title = (String) sessionMap.get("title");
+                                    Boolean isPinned = (Boolean) sessionMap.get("isPinned");
+                                    session.isPinned = isPinned != null ? isPinned : false;
+                                    session.messages = new ArrayList<>();
+
+                                    List<?> msgsList = (List<?>) sessionMap.get("messages");
+                                    if (msgsList != null) {
+                                        for (Object msgObj : msgsList) {
+                                            if (msgObj instanceof Map) {
+                                                Map<String, Object> msgMap = (Map<String, Object>) msgObj;
+                                                String text = (String) msgMap.get("text");
+                                                Boolean isUser = (Boolean) msgMap.get("isUser");
+                                                String imageUri = (String) msgMap.get("imageUri");
+                                                session.messages.add(new ChatMessage(text, isUser != null ? isUser : false, imageUri));
+                                            }
+                                        }
+                                    }
+                                    if (session.messages.size() > 1) allSessions.add(session);
+                                }
+                            }
+                        }
+                    }
+                    createNewSession();
+                })
+                .addOnFailureListener(e -> {
+                    createNewSession();
+                });
     }
 
     private void rebuildSidebarUI() {
@@ -579,7 +611,11 @@ public class AiChatFragment extends Fragment {
 
             if (message.imageUri != null) {
                 holder.ivAttachedImage.setVisibility(View.VISIBLE);
-                holder.ivAttachedImage.setImageURI(Uri.parse(message.imageUri));
+                try {
+                    holder.ivAttachedImage.setImageURI(Uri.parse(message.imageUri));
+                } catch (Exception e) {
+                    holder.ivAttachedImage.setVisibility(View.GONE);
+                }
             } else {
                 holder.ivAttachedImage.setVisibility(View.GONE);
             }

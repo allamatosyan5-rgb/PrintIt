@@ -1,23 +1,28 @@
 package alla.matosyan.printit;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
+import android.app.Dialog;
 import android.os.Bundle;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.stripe.android.PaymentConfiguration;
 import com.stripe.android.paymentsheet.PaymentSheet;
 import com.stripe.android.paymentsheet.PaymentSheetResult;
+
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -33,6 +38,7 @@ public class CheckOutActivity extends AppCompatActivity {
     private TextInputEditText etFullName, etPhone, etShippingAddress, etCity, etZip, etCountry;
     private Button btnPlaceOrder;
     private TextView tvBillProductName, tvBillSubtotal, tvBillTotal;
+    private ImageView ivCheckoutProductImage;
 
     private FirebaseFirestore db;
     private PaymentSheet paymentSheet;
@@ -61,6 +67,7 @@ public class CheckOutActivity extends AppCompatActivity {
         tvBillProductName = findViewById(R.id.tvBillProductName);
         tvBillSubtotal = findViewById(R.id.tvBillSubtotal);
         tvBillTotal = findViewById(R.id.tvBillTotal);
+        ivCheckoutProductImage = findViewById(R.id.ivCheckoutProductImage);
 
         db = FirebaseFirestore.getInstance();
 
@@ -72,6 +79,10 @@ public class CheckOutActivity extends AppCompatActivity {
             tvBillProductName.setText(singleItemToBuy.getName());
             tvBillSubtotal.setText(String.format(Locale.US, "$%.2f", productTotal));
             tvBillTotal.setText(String.format(Locale.US, "$%.2f", productTotal));
+
+            if (singleItemToBuy.getImage() != null) {
+                ivCheckoutProductImage.setImageBitmap(singleItemToBuy.getImage());
+            }
         } else {
             Toast.makeText(this, "Error loading cart.", Toast.LENGTH_SHORT).show();
             finish();
@@ -156,8 +167,7 @@ public class CheckOutActivity extends AppCompatActivity {
                 e.printStackTrace();
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Network Error. Check connection.", Toast.LENGTH_SHORT).show();
-                    btnPlaceOrder.setText("PAY & PLACE ORDER");
-                    btnPlaceOrder.setEnabled(true);
+                    resetCheckoutButton();
                 });
             }
         }).start();
@@ -167,8 +177,7 @@ public class CheckOutActivity extends AppCompatActivity {
         if (paymentSheetResult instanceof PaymentSheetResult.Completed) {
             saveOrderToDatabase();
         } else {
-            btnPlaceOrder.setText("PAY & PLACE ORDER");
-            btnPlaceOrder.setEnabled(true);
+            resetCheckoutButton();
             if (paymentSheetResult instanceof PaymentSheetResult.Failed) {
                 Toast.makeText(this, "Payment Failed", Toast.LENGTH_SHORT).show();
             }
@@ -177,58 +186,93 @@ public class CheckOutActivity extends AppCompatActivity {
 
     private void saveOrderToDatabase() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        String userEmail = (currentUser != null && currentUser.getEmail() != null) ? currentUser.getEmail() : "Guest User";
-        String userId = (currentUser != null) ? currentUser.getUid() : "UnknownDevice";
+        if (currentUser == null) return;
+
+        String userId = currentUser.getUid();
+        String userEmail = currentUser.getEmail() != null ? currentUser.getEmail() : "Guest User";
+        String cartItemId = singleItemToBuy.getId();
+
+        if (cartItemId == null) {
+            Toast.makeText(this, "Error finding item ID.", Toast.LENGTH_SHORT).show();
+            resetCheckoutButton();
+            return;
+        }
+
+        btnPlaceOrder.setText("FINALIZING ORDER...");
 
         db.collection("Orders").get().addOnSuccessListener(queryDocumentSnapshots -> {
             int currentOrderCount = queryDocumentSnapshots.size();
-            String customOrderId = String.format(Locale.US, "ord-%06d", currentOrderCount);
+            String customOrderId = String.format(Locale.US, "ord-%06d", currentOrderCount + 1);
 
-            Map<String, Object> orderData = new HashMap<>();
-            orderData.put("orderId", customOrderId);
-            orderData.put("customerName", etFullName.getText().toString().trim());
-            orderData.put("phone", etPhone.getText().toString().trim());
-            orderData.put("shippingAddress", etShippingAddress.getText().toString().trim() + ", " + etCity.getText().toString().trim() + " " + etZip.getText().toString().trim() + ", " + etCountry.getText().toString().trim());
-            orderData.put("customerEmail", userEmail);
-            orderData.put("customerId", userId);
-            orderData.put("status", "Pending");
-            orderData.put("productName", singleItemToBuy.getName());
-            orderData.put("paymentMethod", "Stripe Credit Card");
-            orderData.put("price", singleItemToBuy.getPrice());
+            db.collection("Users").document(userId).collection("Cart").document(cartItemId)
+                    .get()
+                    .addOnSuccessListener(cartDoc -> {
+                        if (cartDoc.exists()) {
+                            Map<String, Object> orderData = new HashMap<>(cartDoc.getData());
 
-            String encodedImage = "";
-            Bitmap bitmap = singleItemToBuy.getImage();
-            if (bitmap != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
-                byte[] b = baos.toByteArray();
-                encodedImage = android.util.Base64.encodeToString(b, android.util.Base64.DEFAULT);
-            }
-            orderData.put("designPath", encodedImage);
+                            orderData.put("orderId", customOrderId);
+                            orderData.put("customerName", etFullName.getText().toString().trim());
+                            orderData.put("phone", etPhone.getText().toString().trim());
+                            orderData.put("shippingAddress", etShippingAddress.getText().toString().trim() + ", " + etCity.getText().toString().trim() + " " + etZip.getText().toString().trim() + ", " + etCountry.getText().toString().trim());
+                            orderData.put("customerEmail", userEmail);
+                            orderData.put("customerId", userId);
+                            orderData.put("status", "Pending");
+                            orderData.put("paymentMethod", "Stripe Credit Card");
 
-            String currentDate = new SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault()).format(new Date());
-            orderData.put("orderDate", currentDate);
-            orderData.put("timestamp", FieldValue.serverTimestamp());
+                            String currentDate = new SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault()).format(new Date());
+                            orderData.put("orderDate", currentDate);
 
-            db.collection("Orders").document(customOrderId).set(orderData)
-                    .addOnSuccessListener(aVoid -> {
-                        CartManager.cartList.remove(targetIndex);
-                        CartManager.saveCart(this);
+                            db.collection("Orders").document(customOrderId).set(orderData)
+                                    .addOnSuccessListener(aVoid -> {
+                                        db.collection("Users").document(userId).collection("Cart").document(cartItemId).delete();
+                                        CartManager.cartList.remove(targetIndex);
 
-                        Toast.makeText(this, "SUCCESS! ORDER PLACED.", Toast.LENGTH_LONG).show();
-
-                        setResult(Activity.RESULT_OK);
-                        finish();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to complete order document creation.", Toast.LENGTH_SHORT).show();
-                        btnPlaceOrder.setEnabled(true);
-                        btnPlaceOrder.setText("PAY & PLACE ORDER");
+                                        showRatingDialog(customOrderId);
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(this, "Order creation failed.", Toast.LENGTH_SHORT).show();
+                                        resetCheckoutButton();
+                                    });
+                        } else {
+                            Toast.makeText(this, "Error: Item no longer in cart.", Toast.LENGTH_SHORT).show();
+                            resetCheckoutButton();
+                        }
+                    }).addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to retrieve cart item data.", Toast.LENGTH_SHORT).show();
+                        resetCheckoutButton();
                     });
         }).addOnFailureListener(e -> {
-            Toast.makeText(this, "Failed to initialize order sequencing sequence.", Toast.LENGTH_SHORT).show();
-            btnPlaceOrder.setEnabled(true);
-            btnPlaceOrder.setText("PAY & PLACE ORDER");
+            Toast.makeText(this, "Failed to initialize order sequence.", Toast.LENGTH_SHORT).show();
+            resetCheckoutButton();
         });
+    }
+
+    private void showRatingDialog(String customOrderId) {
+        Dialog ratingDialog = new Dialog(this);
+        ratingDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        ratingDialog.setContentView(R.layout.dialog_rating);
+        ratingDialog.setCancelable(false);
+        RatingBar rb = ratingDialog.findViewById(R.id.rbCheckoutRating);
+        Button btnSubmit = ratingDialog.findViewById(R.id.btnSubmitRating);
+
+        btnSubmit.setOnClickListener(v -> {
+            float rating = rb.getRating();
+
+            db.collection("Orders").document(customOrderId)
+                    .update("experienceRating", rating);
+
+            Toast.makeText(this, "Thank you for your order and feedback!", Toast.LENGTH_LONG).show();
+            ratingDialog.dismiss();
+
+            setResult(Activity.RESULT_OK);
+            finish();
+        });
+
+        ratingDialog.show();
+    }
+
+    private void resetCheckoutButton() {
+        btnPlaceOrder.setEnabled(true);
+        btnPlaceOrder.setText("PAY & PLACE ORDER");
     }
 }

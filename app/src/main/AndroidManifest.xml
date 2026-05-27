@@ -58,11 +58,6 @@
             android:exported="false" />
 
         <activity
-            android:name=".OrderHistoryFragment"
-            android:screenOrientation="portrait"
-            android:exported="false" />
-
-        <activity
             android:name=".EmployeeDashboardActivity"
             android:screenOrientation="portrait"
             android:exported="false" />

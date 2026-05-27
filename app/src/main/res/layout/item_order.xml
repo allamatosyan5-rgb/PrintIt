@@ -15,6 +15,15 @@
         android:background="@android:color/white"
         android:padding="16dp">
 
+        <ImageView
+            android:id="@+id/ivOrderImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="12dp"
+            android:scaleType="fitCenter"
+            android:background="#F5F5F5"
+            android:contentDescription="Product Image" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

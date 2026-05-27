@@ -27,8 +27,7 @@ public class CartFragment extends Fragment {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    CartManager.loadCart(getContext());
-                    updateCartUI();
+                    CartManager.loadCartFromFirebase(() -> updateCartUI());
                 }
             }
     );
@@ -47,10 +46,15 @@ public class CartFragment extends Fragment {
         rvCartItems.setLayoutManager(new LinearLayoutManager(getContext()));
 
         if (CartManager.cartList.isEmpty()) {
-            CartManager.loadCart(getContext());
-        }
+            tvTotalPrice.setText("Syncing...");
+            bottomCheckoutBar.setVisibility(View.VISIBLE);
+            layoutEmptyCart.setVisibility(View.GONE);
+            rvCartItems.setVisibility(View.GONE);
 
-        updateCartUI();
+            CartManager.loadCartFromFirebase(() -> updateCartUI());
+        } else {
+            updateCartUI();
+        }
 
         btnContinueShopping.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
@@ -62,6 +66,8 @@ public class CartFragment extends Fragment {
     }
 
     private void updateCartUI() {
+        if (!isAdded()) return;
+
         if (CartManager.cartList.isEmpty()) {
             rvCartItems.setVisibility(View.GONE);
             bottomCheckoutBar.setVisibility(View.GONE);
@@ -80,7 +86,6 @@ public class CartFragment extends Fragment {
             CartAdapter adapter = new CartAdapter(CartManager.cartList, new CartAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(int position) {
-
                 }
 
                 @Override
@@ -92,9 +97,14 @@ public class CartFragment extends Fragment {
 
                 @Override
                 public void onDeleteClick(int position) {
+                    String cloudId = CartManager.cartList.get(position).getId();
+
                     CartManager.cartList.remove(position);
-                    CartManager.saveCart(getContext());
                     updateCartUI();
+
+                    if (cloudId != null) {
+                        CartManager.deleteItemFromFirebase(cloudId);
+                    }
                 }
             });
             rvCartItems.setAdapter(adapter);
